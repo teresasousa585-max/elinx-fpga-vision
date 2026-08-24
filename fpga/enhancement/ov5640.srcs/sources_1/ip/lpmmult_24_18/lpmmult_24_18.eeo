@@ -1,0 +1,13 @@
+// The following must be inserted into your Verilog file for this
+// core to be instantiated. Change the instance name and port connections
+// (in parentheses) to your own signal names.
+
+//----------- Begin Cut here for INSTANTIATION Template ---// INST_TAG
+lpmmult_24_18 your_instance_name (
+	.clock(clock)				,//input clock
+	.dataa(dataa)				,//input [23:0] dataa
+	.datab(datab)				,//input [17:0] datab
+	.result(result)				//output [41:0] result
+);
+
+// INST_TAG_END ------ End INSTANTIATION Template ---------

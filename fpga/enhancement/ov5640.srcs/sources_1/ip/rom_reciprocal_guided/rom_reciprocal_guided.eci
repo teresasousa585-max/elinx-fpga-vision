@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<spirit:design xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009">
+    <spirit:vendor>eHiway</spirit:vendor>
+    <spirit:componentInstances>
+        <spirit:componentInstance>
+            <spirit:instanceName>rom_reciprocal_guided</spirit:instanceName>
+            <spirit:name>M4K</spirit:name>
+            <spirit:type>ROM-1-Port</spirit:type>
+            <spirit:fileset>
+                <spirit:file>D:\meiyan_ip\ov5640(1)\ov5640\ov5640.srcs\sources_1\ip\rom_reciprocal_guided.v</spirit:file>
+            </spirit:fileset>
+            <spirit:configurableElementValues>
+                <spirit:configurableElementValue spirit:referenceId="version">27620</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="IPName">M4K</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="SeriesName"></spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="wide_q_output_bus">18</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="8-bit_words_of_memory">4096</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="ram_block_type">M4K</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="maximum_block_depth">Auto</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="singleClock">1</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="dualClock">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="register_ports_data_wreninput">1</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="register_ports_addressinput">1</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="register_ports_qoutput">1</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="clock_enable">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="create_byte_enable_port">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="byte_enable">9</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="create_aclr">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="specify_memory_leaveItBlank">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="initialize_memory_conent_data">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="specify_memory_usehexmif">1</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="mifHexFilePath">/rom_gf_inv.mif</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="capture_update_system_memory">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="instance_id">None</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="dialogclock_ainput">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="dialogclock_aoutput">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="register_ports_aclr_dataport">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="register_ports_aclr_wrenport">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="register_ports_aclr_addressport">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="register_ports_aclr_qport">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="register_ports_aclr_byteenaport">0</spirit:configurableElementValue>
+            </spirit:configurableElementValues>
+        </spirit:componentInstance>
+    </spirit:componentInstances>
+</spirit:design>

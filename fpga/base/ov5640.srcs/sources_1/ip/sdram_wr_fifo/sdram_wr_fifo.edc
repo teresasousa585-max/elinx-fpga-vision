@@ -1,0 +1,2 @@
+set_false_path -from [get_cells {*dcfifo*delayed_wrptr_g*}] -to [get_cells {*dcfifo*read_sync_registers*}]
+set_false_path -from [get_cells {*dcfifo*read_counter_for_write*}] -to [get_cells {*dcfifo*write_sync_registers*}]

@@ -1,0 +1,114 @@
+// =============================================================================
+// 文件名称：RGB_to_YCbCr.v
+// 主要模块：RGB_to_YCbCr
+// 功能说明：将 RGB 像素转换为 YCbCr 颜色空间。
+// 维护说明：修改接口或时序时，请同步更新本文件注释和上层例化。
+// =============================================================================
+
+`timescale 1 ns/ 1 ps
+module RGB_to_YCbCr(
+    input wire         i_clk,
+    input wire         i_rst,
+    input wire         i_hs,
+    input wire         i_vs,
+    input wire         i_data_en,
+    input wire [23:0]  i_rgb,
+    
+    output wire        o_hs,
+    output wire        o_vs,
+    output wire        o_data_en,
+    output wire [23:0] o_ycbcr,
+    output wire [23:0] o_raw_rgb  // 【新增】原图 RGB 旁路输出
+);
+
+    wire [7:0] r = i_rgb[23:16];
+    wire [7:0] g = i_rgb[15:8];
+    wire [7:0] b = i_rgb[7:0];
+
+    // ==========================================
+    // Stage 1: 硬件乘法器计算 (1拍延迟)
+    // ==========================================
+    wire [15:0] mult_r_77, mult_g_150, mult_b_29;
+    wire [15:0] mult_r_43, mult_g_85, mult_b_128;
+    wire [15:0] mult_r_128, mult_g_107, mult_b_21;
+    
+    reg [2:0]  sync_d1;
+    reg [23:0] rgb_d1; // 【新增】旁路打第 1 拍
+
+    lpmmult_8_8 rm_77 ( .clock(i_clk), .dataa(r), .datab(8'd77), .result(mult_r_77) );
+    lpmmult_8_8 gm_150( .clock(i_clk), .dataa(g), .datab(8'd150),.result(mult_g_150) );
+    lpmmult_8_8 bm_29 ( .clock(i_clk), .dataa(b), .datab(8'd29), .result(mult_b_29) );
+
+    lpmmult_8_8 rm_43 ( .clock(i_clk), .dataa(r), .datab(8'd43), .result(mult_r_43) );
+    lpmmult_8_8 gm_85 ( .clock(i_clk), .dataa(g), .datab(8'd85), .result(mult_g_85) );
+    lpmmult_8_8 bm_128( .clock(i_clk), .dataa(b), .datab(8'd128),.result(mult_b_128) );
+
+    lpmmult_8_8 rm_128( .clock(i_clk), .dataa(r), .datab(8'd128),.result(mult_r_128) );
+    lpmmult_8_8 gm_107( .clock(i_clk), .dataa(g), .datab(8'd107),.result(mult_g_107) );
+    lpmmult_8_8 bm_21 ( .clock(i_clk), .dataa(b), .datab(8'd21), .result(mult_b_21) );
+
+    always @(posedge i_clk) begin
+        if (i_rst) begin
+            sync_d1 <= 0;
+            rgb_d1  <= 24'd0;
+        end else begin
+            sync_d1 <= {i_hs, i_vs, i_data_en};
+            rgb_d1  <= i_rgb; // 乘法器耗时一拍，这里必须把原图存下来对齐
+        end
+    end
+
+    // ==========================================
+    // Stage 2: 累加器计算 (第 2 拍)
+    // ==========================================
+    reg [15:0] add_y, add_cb, add_cr;
+    reg [2:0]  sync_d2;
+    reg [23:0] rgb_d2; // 【新增】旁路打第 2 拍
+
+    always @(posedge i_clk) begin
+        if (i_rst) begin
+            {add_y, add_cb, add_cr} <= 0;
+            sync_d2 <= 0;
+            rgb_d2  <= 24'd0;
+        end else begin
+            add_y   <= mult_r_77 + mult_g_150 + mult_b_29;
+            add_cb  <= mult_b_128 + 16'd32768 - mult_r_43 - mult_g_85;
+            add_cr  <= mult_r_128 + 16'd32768 - mult_g_107 - mult_b_21;
+            
+            sync_d2 <= sync_d1;
+            rgb_d2  <= rgb_d1; // 旁路继续传
+        end
+    end
+
+    // ==========================================
+    // Stage 3: 截取高位输出 (第 3 拍)
+    // ==========================================
+    reg [23:0] oycbcr;
+    reg [23:0] oraw_rgb; // 【新增】旁路打第 3 拍 (输出寄存器)
+    reg ohs, ovs, odata_en;
+
+    always @(posedge i_clk) begin
+        if (i_rst) begin
+            oycbcr <= 0;
+            oraw_rgb <= 24'd0;
+            {ohs, ovs, odata_en} <= 0;
+        end else begin
+            oycbcr   <= {add_y[15:8], add_cb[15:8], add_cr[15:8]};
+            oraw_rgb <= rgb_d2; // 旁路抵达终点
+            
+            ohs      <= sync_d2[2];
+            ovs      <= sync_d2[1];
+            odata_en <= sync_d2[0];
+        end
+    end
+
+    // ==========================================
+    // 最终连线
+    // ==========================================
+    assign o_hs      = ohs;
+    assign o_vs      = ovs;
+    assign o_data_en = odata_en;
+    assign o_ycbcr   = oycbcr;
+    
+    assign o_raw_rgb = oraw_rgb; // 输出对齐后的原图
+
+endmodule

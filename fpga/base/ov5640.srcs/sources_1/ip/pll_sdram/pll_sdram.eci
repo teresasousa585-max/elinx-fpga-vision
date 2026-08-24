@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<spirit:design xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009">
+    <spirit:vendor>eHiway</spirit:vendor>
+    <spirit:componentInstances>
+        <spirit:componentInstance>
+            <spirit:instanceName>pll_sdram</spirit:instanceName>
+            <spirit:name>PLL</spirit:name>
+            <spirit:type></spirit:type>
+            <spirit:fileset>
+                <spirit:file>D:\sys\ov5640.srcs\sources_1\ip/pll_sdram.v</spirit:file>
+            </spirit:fileset>
+            <spirit:configurableElementValues>
+                <spirit:configurableElementValue spirit:referenceId="SeriesName">eHiChip6</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="IPName">PLL</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="version">29706</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="FastPll_c0">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="FastPll_c1">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="FastPll_zeroDelay">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="FastPll_noCompensation">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="RHPll_c0">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="RHPll_c1">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="RHPll_c2">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="RHPll_c3">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="RHPll_c4">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="RHPll_zeroDelay">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="RHPll_noCompensation">1</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="inclk">50.000</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="check_VCO_PFD">1</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="optional_input_pllena">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="optional_input_areset">1</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="optional_input_pfd_load">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="lock_output_locked">1</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="enable_auto_reset">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="enhanced_pll">1</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="enhanced_cascade_pll">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="fast_pll">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="lwt_liberal">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="lwt_moderate">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="lwt_conservation">1</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="glc_64">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="glc_128">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="glc_256">1</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="glc_512">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="output_clock_c0">1</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="output_clock_c1">1</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="output_clock_e0">1</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="output_clock_c3">1</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="output_clock_c4">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="output_clock_e02">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="phase_adjust_c0">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="phase_adjust_c1">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="phase_adjust_e0">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="phase_adjust_c3">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="phase_adjust_c4">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="phase_adjust_e02">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="phase_shift_bypass_c0">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="phase_shift_bypass_c1">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="phase_shift_bypass_e0">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="phase_shift_bypass_c3">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="phase_shift_bypass_c4">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="phase_shift_bypass_e02">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="c0_mul">5</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="c1_mul">5</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="e0_mul">5</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="c3_mul">5</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="c4_mul">1</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="e02_mul">1</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="c0_div">2</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="c1_div">2</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="e0_div">2</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="c3_div">2</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="c4_div">1</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="e02_div">1</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="c0_duty">50.000</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="c1_duty">50.000</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="e0_duty">50.000</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="c3_duty">50.000</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="c4_duty"></spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="e02_duty"></spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="c0_phase">0.000</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="c1_phase">202.500</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="e0_phase">0.000</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="c3_phase">0.000</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="c4_phase"></spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="e02_phase"></spirit:configurableElementValue>
+            </spirit:configurableElementValues>
+        </spirit:componentInstance>
+    </spirit:componentInstances>
+</spirit:design>

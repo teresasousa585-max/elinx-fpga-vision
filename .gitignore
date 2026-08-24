@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# 上位机运行产物
+captures/
+recordings/
+*.avi
+*.mp4
+*.log
+
+# FPGA 工具生成目录
+db/
+incremental_db/
+*.runs/
+*.pr/
+output_files/
+simulation/
+*.bak
+*.tmp
+*.rpt
+*.smsg
+*.summary
+
+# 大型构建产物与可执行文件
+*.exe
+*.dll
+*.psk
+*.jpsk
+*.fst
+*.route
+*.place
+*.edi
+*.edb
+
+# 编辑器与系统文件
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
+

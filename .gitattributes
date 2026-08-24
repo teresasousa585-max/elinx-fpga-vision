@@ -1,0 +1,9 @@
+* text=auto
+*.py text eol=lf
+*.v text eol=lf
+*.qsf text eol=lf
+*.qpf text eol=lf
+*.md text eol=lf
+*.mif text eol=lf
+*.vqm binary
+

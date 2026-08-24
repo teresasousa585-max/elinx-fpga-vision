@@ -1,0 +1,177 @@
+// Copyright (C) 2006-2024 eHiWay Corporation
+// Your use of eHiWay Corporation's design tools, logic functions 
+// and other software and tools, and its AMPP partner logic 
+// functions, and any output files from any of the foregoing 
+// (including device programming or simulation files), and any 
+// associated documentation or information are expressly subject 
+// to the terms and conditions of the eHiWay Program License 
+// Subscription Agreement, eHiWay MegaCore Function License 
+// Agreement, or other applicable license agreement, including, 
+// without limitation, that your use is for the sole purpose of 
+// programming logic devices manufactured by eHiWay and sold by 
+// eHiWay or its authorized distributors.  Please refer to the 
+// applicable agreement for further details.
+
+// VENDOR "eHiWay"
+// PROGRAM "eLinx 64-Bit"
+// VERSION "Version 3.0 "
+
+// DATE "04/24/2026 21:34:59"                                                             
+
+module 	lpmmult_8_8 (
+	clock,
+	dataa,
+	datab,
+	result);
+input 	clock;
+input 	[7:0] dataa;
+input 	[7:0] datab;
+output 	[15:0] result;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1~0 ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1~1 ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2 ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT1 ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT2 ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT3 ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT4 ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT5 ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT6 ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT7 ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT8 ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT9 ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT10 ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT11 ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT12 ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT13 ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT14 ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT15 ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~4 ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~5 ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[0] ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[1] ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[2] ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[3] ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[4] ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[5] ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[6] ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[7] ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[8] ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[9] ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[10] ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[11] ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[12] ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[13] ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[14] ;
+wire \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[15] ;
+wire [15:0] \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result ;
+
+
+wire gnd;
+wire vcc;
+
+assign gnd = 1'b0;
+assign vcc = 1'b1;
+
+
+stratix_mac_mult \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~I (
+	.signa(gnd),
+	.signb(gnd),
+	.dataa({dataa[7],dataa[6],dataa[5],dataa[4],dataa[3],dataa[2],dataa[1],dataa[0],\gnd }),
+	.datab({datab[7],datab[6],datab[5],datab[4],datab[3],datab[2],datab[1],datab[0],\gnd }),
+	.clk({clk_unconnected_wire_0,clk_unconnected_wire_1,clk_unconnected_wire_2,clock}),
+	.aclr({\gnd ,\gnd ,\gnd ,\gnd }),
+	.ena({\vcc ,\vcc ,\vcc ,\vcc }),
+	.dataout({\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT15 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT14 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT13 ,
+\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT12 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT11 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT10 ,
+\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT9 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT8 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT7 ,
+\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT6 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT5 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT4 ,
+\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT3 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT2 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT1 ,
+\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~5 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~4 }),
+	.observabledataa_regout({\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~OBSERVABLEDATAA_REGOUT7 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~OBSERVABLEDATAA_REGOUT6 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~OBSERVABLEDATAA_REGOUT5 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~OBSERVABLEDATAA_REGOUT4 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~OBSERVABLEDATAA_REGOUT3 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~OBSERVABLEDATAA_REGOUT2 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~OBSERVABLEDATAA_REGOUT1 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~OBSERVABLEDATAA_REGOUT0 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~0 }),
+	.observabledatab_regout({\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~OBSERVABLEDATAB_REGOUT7 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~OBSERVABLEDATAB_REGOUT6 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~OBSERVABLEDATAB_REGOUT5 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~OBSERVABLEDATAB_REGOUT4 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~OBSERVABLEDATAB_REGOUT3 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~OBSERVABLEDATAB_REGOUT2 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~OBSERVABLEDATAB_REGOUT1 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~OBSERVABLEDATAB_REGOUT0 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~1 }));
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~I .dataa_width = 9;
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~I .datab_width = 9;
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~I .dataa_clock = "0";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~I .datab_clock = "0";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~I .signa_clock = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~I .signb_clock = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~I .output_clock = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~I .dataa_clear = "0";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~I .datab_clear = "0";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~I .signa_clear = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~I .signb_clear = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~I .output_clear = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~I .signa_internally_grounded = "false";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~I .signb_internally_grounded = "false";
+
+stratix_mac_out \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1 (
+	.dataa({\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT15 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT14 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT13 ,
+\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT12 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT11 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT10 ,
+\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT9 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT8 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT7 ,
+\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT6 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT5 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT4 ,
+\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT3 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT2 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~DATAOUT1 ,
+\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~5 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_mult2~4 }),
+	.dataout({\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[15] ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[14] ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[13] ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[12] ,
+\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[11] ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[10] ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[9] ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[8] ,
+\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[7] ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[6] ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[5] ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[4] ,
+\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[3] ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[2] ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[1] ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[0] ,
+\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1~1 ,\lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1~0 }));
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1 .operation_mode = "output_only";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1 .dataa_width = 18;
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1 .addnsub0_clock = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1 .addnsub1_clock = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1 .zeroacc_clock = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1 .signa_clock = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1 .signb_clock = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1 .output_clock = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1 .addnsub0_pipeline_clock = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1 .addnsub1_pipeline_clock = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1 .zeroacc_pipeline_clock = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1 .signa_pipeline_clock = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1 .signb_pipeline_clock = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1 .addnsub0_clear = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1 .addnsub1_clear = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1 .zeroacc_clear = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1 .signa_clear = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1 .signb_clear = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1 .output_clear = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1 .addnsub0_pipeline_clear = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1 .addnsub1_pipeline_clear = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1 .zeroacc_pipeline_clear = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1 .signa_pipeline_clear = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1 .signb_pipeline_clear = "none";
+defparam \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|mac_out1 .data_out_programmable_invert = 72'b000000000000000000000000000000000000000000000000000000000000000000000000;
+
+assign result[0] = \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[0] ;
+
+assign result[1] = \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[1] ;
+
+assign result[2] = \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[2] ;
+
+assign result[3] = \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[3] ;
+
+assign result[4] = \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[4] ;
+
+assign result[5] = \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[5] ;
+
+assign result[6] = \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[6] ;
+
+assign result[7] = \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[7] ;
+
+assign result[8] = \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[8] ;
+
+assign result[9] = \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[9] ;
+
+assign result[10] = \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[10] ;
+
+assign result[11] = \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[11] ;
+
+assign result[12] = \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[12] ;
+
+assign result[13] = \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[13] ;
+
+assign result[14] = \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[14] ;
+
+assign result[15] = \lpm_mult:lpm_mult_component|mult_m5q:auto_generated|result[15] ;
+
+endmodule

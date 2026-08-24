@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<spirit:design xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009">
+    <spirit:vendor>eHiway</spirit:vendor>
+    <spirit:componentInstances>
+        <spirit:componentInstance>
+            <spirit:instanceName>shift_delay_32w_8d</spirit:instanceName>
+            <spirit:name>ShiftRegisterRAMBased</spirit:name>
+            <spirit:type></spirit:type>
+            <spirit:fileset>
+                <spirit:file>D:/jichuang_project/ov5640(1)/ov5640/ov5640.srcs/sources_1/ip/shift_delay_32w_8d.v</spirit:file>
+            </spirit:fileset>
+            <spirit:configurableElementValues>
+                <spirit:configurableElementValue spirit:referenceId="version">-19</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="IPName">ShiftRegisterRAMBased</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="SeriesName">eHiChip6</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="shiftInOutWidth">32</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="numberOfTaps">1</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="tapDistance">8</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="useClkenPort">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="useAclrPort">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="memoryBlockType">M4K</spirit:configurableElementValue>
+            </spirit:configurableElementValues>
+        </spirit:componentInstance>
+    </spirit:componentInstances>
+</spirit:design>

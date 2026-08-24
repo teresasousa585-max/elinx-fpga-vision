@@ -1,0 +1,14 @@
+// The following must be inserted into your Verilog file for this
+// core to be instantiated. Change the instance name and port connections
+// (in parentheses) to your own signal names.
+
+//----------- Begin Cut here for INSTANTIATION Template ---// INST_TAG
+pll_sdarm your_instance_name (
+	.areset(areset)				,//input areset
+	.inclk0(inclk0)				,//input inclk0
+	.c0(c0)						,//output c0
+	.c1(c1)						,//output c1
+	.locked(locked)				//output locked
+);
+
+// INST_TAG_END ------ End INSTANTIATION Template ---------

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<spirit:design xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009">
+    <spirit:vendor>eHiway</spirit:vendor>
+    <spirit:componentInstances>
+        <spirit:componentInstance>
+            <spirit:instanceName>hsv_divide</spirit:instanceName>
+            <spirit:name>LPM_DIVIDE</spirit:name>
+            <spirit:type></spirit:type>
+            <spirit:fileset>
+                <spirit:file>D:/eLinex_project/ov5640_latest/ov5640.srcs/sources_1/ip/hsv_divide.v</spirit:file>
+            </spirit:fileset>
+            <spirit:configurableElementValues>
+                <spirit:configurableElementValue spirit:referenceId="SeriesName">eHiChip6</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="IPName">LPM_DIVIDE</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="version">27617</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="numer">16</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="denom">8</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="numer_representation">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="denom_representation">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="pipelineNo">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="pipelineYes">1</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="clockcycles">8</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="aclr">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="clocken">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="optimize_default">1</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="optimize_area">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="optimize_speed">0</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="remainder_yes">1</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="remainder_no">0</spirit:configurableElementValue>
+            </spirit:configurableElementValues>
+        </spirit:componentInstance>
+    </spirit:componentInstances>
+</spirit:design>

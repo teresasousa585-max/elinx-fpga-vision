@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<spirit:design xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009">
+    <spirit:vendor>eHiway</spirit:vendor>
+    <spirit:componentInstances>
+        <spirit:componentInstance>
+            <spirit:instanceName>eth_dcfifo</spirit:instanceName>
+            <spirit:name>FIFO</spirit:name>
+            <spirit:type></spirit:type>
+            <spirit:fileset>
+                <spirit:file>D:/sys/ov5640.srcs/sources_1/ip/eth_dcfifo/eth_dcfifo.v</spirit:file>
+            </spirit:fileset>
+            <spirit:configurableElementValues>
+                <spirit:configurableElementValue spirit:referenceId="IPName">FIFO</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="SeriesName">eHiChip6</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="version">28418</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="Width">8</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="Depth">4096</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="ClockRW">No</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="ClockSynch">No</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="Full">ON</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="Empty">ON</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="Usedw">ON</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="AlmostFull">OFF</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="AlmostEmpty">OFF</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="SCaclr">OFF</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="SCsclr">OFF</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="DCRDfull">OFF</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="DCRDempty">OFF</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="DCRDuse">ON</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="DCWRfull">OFF</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="DCWRempty">OFF</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="Differ">OFF</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="DCWRuse">ON</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="DCasyn">ON</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="Rdreq">Normal</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="Maxblockdep">Auto</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="OutWidth">8</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="OutputRegister">BestSpeed</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="Overflow">OFF</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="Underflow">OFF</spirit:configurableElementValue>
+                <spirit:configurableElementValue spirit:referenceId="LConly">OFF</spirit:configurableElementValue>
+            </spirit:configurableElementValues>
+        </spirit:componentInstance>
+    </spirit:componentInstances>
+</spirit:design>

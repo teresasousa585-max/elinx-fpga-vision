@@ -1,0 +1,13 @@
+// The following must be inserted into your Verilog file for this
+// core to be instantiated. Change the instance name and port connections
+// (in parentheses) to your own signal names.
+
+//----------- Begin Cut here for INSTANTIATION Template ---// INST_TAG
+shift_delay_32w_16d your_instance_name (
+	.clock(clock),   //input clock
+	.shiftin(shiftin),   //input [31:0]  shiftin
+	.shiftout(shiftout), //output [31:0]  shiftout
+	.taps(taps) //output	[31:0]  taps
+);
+
+// INST_TAG_END ------ End INSTANTIATION Template ---------

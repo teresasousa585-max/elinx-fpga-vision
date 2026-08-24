@@ -1,0 +1,18 @@
+// The following must be inserted into your Verilog file for this
+// core to be instantiated. Change the instance name and port connections
+// (in parentheses) to your own signal names.
+
+//----------- Begin Cut here for INSTANTIATION Template ---//INST_TAG
+sdram_wr_fifo your_instance_name (
+		.aclr (aclr),            //input    aclr
+		.wrclk (wrclk),          //input    wrclk
+		.rdclk (rdclk),          //input    rdclk
+		.data (data),            //input    [15:0]    data
+		.rdreq (rdreq),          //input    rdreq
+		.wrreq (wrreq),          //input    wrreq
+		.rdusedw (rdusedw),      //output    [11:0]    rdusedw
+		.wrusedw (wrusedw),      //output    [11:0]    wrusedw
+		.q (q)                   //output    [15:0]    q
+);
+
+// INST_TAG_END ------ End INSTANTIATION Template ---------

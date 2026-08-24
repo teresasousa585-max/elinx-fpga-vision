@@ -1,0 +1,16 @@
+// The following must be inserted into your Verilog file for this
+// core to be instantiated. Change the instance name and port connections
+// (in parentheses) to your own signal names.
+
+//----------- Begin Cut here for INSTANTIATION Template ---// INST_TAG
+hsv_divide your_instance_name (
+	.clock(clock),				//input	clock
+	.denom(denom),				//input	[7:0]  denom
+	.numer(numer),				//input	[15:0]  numer
+	.quotient(quotient),		//output	[15:0]  quotient
+	.remain(remain)				//output	[7:0]  remain
+
+);
+
+// INST_TAG_END ------ End INSTANTIATION Template ---------
+

@@ -1,0 +1,15 @@
+// The following must be inserted into your Verilog file for this
+// core to be instantiated. Change the instance name and port connections
+// (in parentheses) to your own signal names.
+
+//----------- Begin Cut here for INSTANTIATION Template ---// INST_TAG
+m4k_sobel_sync your_instance_name (
+	.clock(clock)					,//input clock
+	.data(data)						,//input [15:0] data
+	.rdaddress(rdaddress)				,//input [10:0] rdaddress
+	.wraddress(wraddress)				,//input [10:0] wraddress
+	.wren(wren)					,//input wren
+	.q(q)							//output	[15:0] q
+);
+
+// INST_TAG_END ------ End INSTANTIATION Template ---------

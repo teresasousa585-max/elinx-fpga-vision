@@ -1,0 +1,17 @@
+// The following must be inserted into your Verilog file for this
+// core to be instantiated. Change the instance name and port connections
+// (in parentheses) to your own signal names.
+
+//----------- Begin Cut here for INSTANTIATION Template ---// INST_TAG
+ram_64k_ip your_instance_name (
+	.rdclock(rdclock)					,//input rdclock
+	.wrclock(wrclock)					,//input wrclock
+	.data(data)						,//input [15:0] data
+	.rdaddress(rdaddress)				,//input [15:0] rdaddress
+	.wraddress(wraddress)				,//input [15:0] wraddress
+	.wren(wren)					,//input wren
+	.q(q)							,//output	[15:0] q
+	.rden(rden)					//input rden
+);
+
+// INST_TAG_END ------ End INSTANTIATION Template ---------

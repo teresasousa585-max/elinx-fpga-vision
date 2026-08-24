@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Product Version: eLinx v1.0.0.0-->
+<!--								-->
+<!--Copyright 2017-2024 eHiWay, Inc. All Rights Reserved.-->
+<Project Path="/ov5640.epr">
+    <Configuration>
+        <Option Name="ActiveSimSet" Val="sim_1"/>
+        <Option Name="Project Type" Val="RTL"/>
+        <Option Name="SimulationTopModule" Val=""/>
+        <Option Name="Win_Version" Val="x86"/>
+    </Configuration>
+    <FileSets>
+        <FileSet Name="sources_1" Type="DesignSrcs" RelSrcDir="$PSRCDIR/sources_1">
+            <File Path="/ov5640.srcs/sources_1/new/hdmi.v"/>
+            <File Path="/ov5640.srcs/sources_1/new/i2c_sll9134.v"/>
+            <File Path="/ov5640.srcs/sources_1/new/ov5640_capture.v"/>
+            <File Path="/ov5640.srcs/sources_1/new/ov5640_i2c_init.v"/>
+            <File Path="/ov5640.srcs/sources_1/new/top.v"/>
+            <File Path="/ov5640.srcs/sources_1/ip/pll_1/pll_1.eci"/>
+            <File Path="/ov5640.srcs/sources_1/new/sdram_fifo_ctrl.v"/>
+            <File Path="/ov5640.srcs/sources_1/new/sdram_param.v"/>
+            <File Path="/ov5640.srcs/sources_1/new/sdram_top.v"/>
+            <File Path="/ov5640.srcs/sources_1/ip/sdram_wr_fifo/sdram_wr_fifo.eci"/>
+            <File Path="/ov5640.srcs/sources_1/ip/sdram_rd_fifo/sdram_rd_fifo.eci"/>
+            <File Path="/ov5640.srcs/sources_1/ip/pll_sdram/pll_sdram.eci"/>
+            <File Path="/ov5640.srcs/sources_1/new/uart_tx.v"/>
+            <File Path="/ov5640.srcs/sources_1/imports/sdram_control.v"/>
+            <File Path="/ov5640.srcs/sources_1/new/rgb2ycbcr.v"/>
+            <File Path="/ov5640.srcs/sources_1/new/rgb2hsv.v"/>
+            <File Path="/ov5640.srcs/sources_1/ip/hsv_divide/hsv_divide.eci"/>
+            <File Path="/ov5640.srcs/sources_1/ip/line_buffer/line_buffer.eci"/>
+            <File Path="/ov5640.srcs/sources_1/ip/ram_64k_ip/ram_64k_ip.eci"/>
+            <File Path="/ov5640.srcs/sources_1/new/ram_large_192k.v"/>
+            <File Path="/ov5640.srcs/sources_1/new/video_rotator_bram.v"/>
+            <File Path="/ov5640.srcs/sources_1/new/histogram_equalization.v"/>
+            <File Path="/ov5640.srcs/sources_1/ip/hist_ram/hist_ram.eci"/>
+            <File Path="/ov5640.srcs/sources_1/ip/map_table/map_table.eci"/>
+            <File Path="/ov5640.srcs/sources_1/new/hdr_tone_mapping_color.v"/>
+            <File Path="/ov5640.srcs/sources_1/ip/m4k_sync/m4k_sync.eci"/>
+            <File Path="/ov5640.srcs/sources_1/ip/rom_8_256/rom_8_256.eci"/>
+            <File Path="/ov5640.srcs/sources_1/ip/rom_reciprocal/rom_reciprocal.eci"/>
+            <File Path="/ov5640.srcs/sources_1/new/RGB_to_YCbCr.v"/>
+            <File Path="/ov5640.srcs/sources_1/new/YCbCr_to_RGB.v"/>
+            <File Path="/ov5640.srcs/sources_1/new/bilateral_filtering_proc_to_hdmi.v"/>
+            <File Path="/ov5640.srcs/sources_1/new/bilateral_filtering_Line_buffer.v"/>
+            <File Path="/ov5640.srcs/sources_1/new/bilateral_core.v"/>
+            <File Path="/ov5640.srcs/sources_1/new/mean_filter_3x3.v"/>
+            <File Path="/ov5640.srcs/sources_1/new/sdram_control_100M.v"/>
+            <File Path="/ov5640.srcs/sources_1/new/sdram_top_100M.v"/>
+            <File Path="/ov5640.srcs/sources_1/new/gray_morphology.v"/>
+            <File Path="/ov5640.srcs/sources_1/new/uart_rx.v"/>
+            <File Path="/ov5640.srcs/sources_1/new/uart_cmd_parser.v"/>
+            <File Path="/ov5640.srcs/sources_1/new/cdc_handshake.v"/>
+            <File Path="/ov5640.srcs/sources_1/new/video_algo_manager.v"/>
+            <File Path="/ov5640.srcs/sources_1/imports/CRC32_D8.v"/>
+            <File Path="/ov5640.srcs/sources_1/imports/mdio_com.v"/>
+            <File Path="/ov5640.srcs/sources_1/imports/phy_reg_config.v"/>
+            <File Path="/ov5640.srcs/sources_1/imports/UDP_Send.v"/>
+            <File Path="/ov5640.srcs/sources_1/ip/eth_dcfifo/eth_dcfifo.eci"/>
+            <File Path="/ov5640.srcs/sources_1/ip/fifo_async_16b/fifo_async_16b.eci"/>
+            <File Path="/ov5640.srcs/sources_1/new/gesture_recognition.v"/>
+            <File Path="/ov5640.srcs/sources_1/imports/sobel_calc.v"/>
+            <File Path="/ov5640.srcs/sources_1/imports/sobel_line_buffer.v"/>
+            <File Path="/ov5640.srcs/sources_1/ip/m4k_sobel_sync/m4k_sobel_sync.eci"/>
+        </FileSet>
+        <FileSet Name="constrs_1" Type="Constrs" RelSrcDir="$PSRCDIR/constrs_1">
+            <File Path="/ov5640.srcs/constrs_1/new/ov5640.edc"/>
+            <Config>
+                <Option Name="TargetConstrsFile" Val="/ov5640.srcs/constrs_1/new/ov5640.edc"/>
+            </Config>
+        </FileSet>
+        <FileSet Name="sim_1" Type="SimulationSrcs" RelSrcDir="$PSRCDIR/sim_1">
+            <Config>
+                <Option Name="TargetSimulationsFile" Val=""/>
+            </Config>
+        </FileSet>
+    </FileSets>
+    <Runs>
+        <Run Id="synth_1" Type="Synthesis" SrcSet="sources_1" ConstrsSet="constrs_1" State="current" Parent="" Configuration="">
+            <Option Id="Compilation Flow">Classic Flow</Option>
+            <Option Id="Device">EQ6HL130</Option>
+            <Option Id="IPRepositories"></Option>
+            <Option Id="LanguageVersion">VERILOG_2001</Option>
+            <Option Id="OutOfDate">0</Option>
+            <Option Id="Package">CSG484_H</Option>
+            <Option Id="Series">eHiChip6</Option>
+            <Option Id="TargetLanguage">VERILOG</Option>
+            <Option Id="TopModule">top</Option>
+        </Run>
+        <Run Id="imple_1" Type="Implementation" SrcSet="sources_1" ConstrsSet="constrs_1" State="current" Parent="" Configuration="" SynthRun="synth_1">
+            <Option Id="BitgenOutOfDate">0</Option>
+            <Option Id="Manufacturer"></Option>
+            <Option Id="ManufacturerSeries"></Option>
+            <Option Id="OutOfDate">0</Option>
+        </Run>
+    </Runs>
+    <PRFlow>
+        <PartitionDefs/>
+        <PRConfigurations/>
+    </PRFlow>
+</Project>

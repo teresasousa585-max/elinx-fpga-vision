@@ -1,0 +1,316 @@
+// =============================================================================
+// 文件名称：video_algo_manager.v
+// 主要模块：image_process_pipe
+// 功能说明：根据串口模式选择图像处理支路，并统一输出视频时序。
+// 维护说明：修改接口或时序时，请同步更新本文件注释和上层例化。
+// =============================================================================
+
+`timescale 1ns / 1ps
+
+module image_process_pipe (
+    input wire clk_hdmi,
+    input wire sys_rst,
+
+    // 上位机下发的模式指令
+    input wire [3:0] al_main_hdmi,
+    input wire [7:0] al_sub_hdmi,
+
+    // 来自 hdmi.v 的基础完美图像与时序
+    input wire        raw_hs,
+    input wire        raw_vs,
+    input wire        raw_de,
+    input wire [23:0] raw_rgb,
+
+    // 最终输出到显示器物理引脚的图像与时序
+    output reg        final_hs,
+    output reg        final_vs,
+    output reg        final_de,
+    output reg [23:0] final_rgb
+);
+
+  // 算法 1：RGB 转 YCbCr (延迟 3 拍)
+  wire sync_ycbcr_hs, sync_ycbcr_vs, sync_ycbcr_de;
+  wire [23:0] ycbcr_data, sync_raw_rgb_ycbcr;
+  rgb2ycbcr u_rgb2ycbcr (
+      .clk(clk_hdmi),
+      .rst(sys_rst),
+      .i_hs(raw_hs),
+      .i_vs(raw_vs),
+      .i_de(raw_de),
+      .i_rgb(raw_rgb),
+      .o_hs(sync_ycbcr_hs),
+      .o_vs(sync_ycbcr_vs),
+      .o_de(sync_ycbcr_de),
+      .o_ycbcr(ycbcr_data),
+      .o_raw_rgb(sync_raw_rgb_ycbcr)
+  );
+  wire [7:0] algo_Y = ycbcr_data[23:16];
+
+  // 算法 2：RGB 转 HSV 肤色提取 (延迟 3 拍)
+  wire sync_hsv_hs, sync_hsv_vs, sync_hsv_de;
+  wire [23:0] hsv_data;
+  rgb2hsv u_rgb2hsv (
+      .clk(clk_hdmi),
+      .rst(sys_rst),
+      .i_hs(raw_hs),
+      .i_vs(raw_vs),
+      .i_de(raw_de),
+      .i_rgb(raw_rgb),
+      .o_hs(sync_hsv_hs),
+      .o_vs(sync_hsv_vs),
+      .o_de(sync_hsv_de),
+      .o_hsv(hsv_data),
+      .o_raw_rgb()
+  );
+  wire [7:0] H = hsv_data[23:16], S = hsv_data[15:8];
+  wire is_skin = (H > 8'd2 && H < 8'd25 && S > 8'd40);
+
+  // 算法 6：直方图均衡化
+  wire equ_hs, equ_vs, equ_de;
+  wire [7:0] equ_Y;
+  histogram_equalization u_hist_eq (
+      .clk(clk_hdmi),
+      .rst(sys_rst),
+      .hs(sync_ycbcr_hs),
+      .vsync(sync_ycbcr_vs),
+      .de(sync_ycbcr_de),
+      .din(algo_Y),
+      .hs_out(equ_hs),
+      .vsync_out(equ_vs),
+      .de_out(equ_de),
+      .dout(equ_Y)
+  );
+
+  // 算法 8：硬件级 HDR
+  wire hdr_hs, hdr_vs, hdr_de;
+  wire [23:0] hdr_rgb;
+  hdr_tone_mapping_color u_hdr_color (
+      .clk(clk_hdmi),
+      .rst(sys_rst),
+      .hs(sync_ycbcr_hs),
+      .vsync(sync_ycbcr_vs),
+      .de(sync_ycbcr_de),
+      .din_Y(algo_Y),
+      .din_rgb(sync_raw_rgb_ycbcr),
+      .hs_out(hdr_hs),
+      .vsync_out(hdr_vs),
+      .de_out(hdr_de),
+      .dout_rgb(hdr_rgb)
+  );
+
+  // 算法 9：双边滤波平滑
+  wire bil_hs, bil_vs, bil_de;
+  wire [23:0] bil_rgb;
+  bilateral_filtering_proc_to_hdmi #(
+      .PIXEL_PER_LINE(11'd1024)
+  ) u_bilateral (
+      .i_clk(clk_hdmi),
+      .i_rst(sys_rst),
+      .i_hs(raw_hs),
+      .i_vs(raw_vs),
+      .i_de(raw_de),
+      .i_rgb_data(raw_rgb),
+      .o_hs(bil_hs),
+      .o_vs(bil_vs),
+      .o_de(bil_de),
+      .o_rgb_data(bil_rgb)
+  );
+
+  // 算法 7：形态学操作 (腐蚀/膨胀)
+  wire morph_hs, morph_vs, morph_de;
+  wire [7:0] morph_Y;
+  gray_morphology #(
+      .H_DISP(1024)
+  ) u_morphology (
+      .clk(clk_hdmi),
+      .rst(sys_rst),
+      .mode(al_sub_hdmi == 8'd1),  // 0:腐蚀, 1:膨胀
+      .vs_in(sync_ycbcr_vs),
+      .hs_in(sync_ycbcr_hs),
+      .de_in(sync_ycbcr_de),
+      .data_in(algo_Y),
+      .vs_out(morph_vs),
+      .hs_out(morph_hs),
+      .de_out(morph_de),
+      .data_out(morph_Y)
+  );
+
+
+  // 辅助算法：抗马赛克平滑 (仅给放大模式用)
+  wire smooth_hs, smooth_vs, smooth_de;
+  wire [23:0] smooth_rgb;
+  mean_filter_3x3 u_smooth (
+      .i_clk(clk_hdmi),
+      .i_rst(sys_rst),
+      .i_hs (raw_hs),
+      .i_vs (raw_vs),
+      .i_de (raw_de),
+      .i_rgb(raw_rgb),
+      .o_hs (smooth_hs),
+      .o_vs (smooth_vs),
+      .o_de (smooth_de),
+      .o_rgb(smooth_rgb)
+  );
+
+  // 算法 10：Sobel 边缘检测
+  // =========================================================================
+  // 手动寄存器隔离区：防止 Sobel 庞大的逻辑树倒吸前端信号质量
+  // =========================================================================
+  reg sobel_in_hs, sobel_in_vs, sobel_in_de;
+  reg [7:0] sobel_in_Y;
+
+  always @(posedge clk_hdmi) begin
+    sobel_in_hs <= sync_ycbcr_hs;
+    sobel_in_vs <= sync_ycbcr_vs;
+    sobel_in_de <= sync_ycbcr_de;
+    sobel_in_Y  <= algo_Y;
+  end
+
+  wire sobel_lb_hs, sobel_lb_vs, sobel_lb_de;
+  wire [7:0] p11, p12, p13, p21, p22, p23, p31, p32, p33;
+
+  wire sobel_hs, sobel_vs, sobel_de;
+  wire [23:0] sobel_rgb;
+
+  // 1. 实例化 3x3 行缓存窗口
+  sobel_line_buffer #(
+      .H_TOTAL(11'd1344)
+  ) u_sobel_lb (
+      .i_clk      (clk_hdmi),
+      .i_rst      (sys_rst),
+      .i_hs       (sobel_in_hs),
+      .i_vs       (sobel_in_vs),
+      .i_data_en  (sobel_in_de),
+      .i_gray_data(sobel_in_Y),   // 输入灰度数据
+
+      // 3x3 窗口输出
+      .o_p11(p11),
+      .o_p12(p12),
+      .o_p13(p13),
+      .o_p21(p21),
+      .o_p22(p22),
+      .o_p23(p23),
+      .o_p31(p31),
+      .o_p32(p32),
+      .o_p33(p33),
+
+      // 窗口对齐的时序
+      .o_hs     (sobel_lb_hs),
+      .o_vs     (sobel_lb_vs),
+      .o_data_en(sobel_lb_de)
+  );
+
+  // 2. 实例化 Sobel 计算模块
+  sobel_calc u_sobel_calc (
+      .clk(clk_hdmi),
+      .rst(sys_rst),
+
+      // 来自 Line Buffer 的时序和窗口
+      .i_hs(sobel_lb_hs),
+      .i_vs(sobel_lb_vs),
+      .i_de(sobel_lb_de),
+      .p11 (p11),
+      .p12 (p12),
+      .p13 (p13),
+      .p21 (p21),
+      .p22 (p22),
+      .p23 (p23),
+      .p31 (p31),
+      .p32 (p32),
+      .p33 (p33),
+
+      // 动态阈值：复用上位机的 8 位子模式指令
+      .i_threshold(8'd80),
+
+      // 最终的二值化边缘输出
+      .o_hs        (sobel_hs),
+      .o_vs        (sobel_vs),
+      .o_de        (sobel_de),
+      .o_rgb_binary(sobel_rgb)
+  );
+
+  // 终极管线路由 (MUX)：保证各模式下时序绝对安全对齐
+  always @(posedge clk_hdmi) begin
+    case (al_main_hdmi)
+      4'd0: begin  // 原图直出
+        final_hs  <= sync_ycbcr_hs;
+        final_vs  <= sync_ycbcr_vs;
+        final_de  <= sync_ycbcr_de;
+        final_rgb <= sync_ycbcr_de ? sync_raw_rgb_ycbcr : 24'd0;
+      end
+
+      4'd1: begin
+        final_hs <= sync_ycbcr_hs;
+        final_vs <= sync_ycbcr_vs;
+        final_de <= sync_ycbcr_de;
+        final_rgb <= sync_ycbcr_de ? (al_sub_hdmi == 8'd1 ? {algo_Y, algo_Y, algo_Y} : sync_raw_rgb_ycbcr) : 24'd0;
+      end  // 色域转换 (提取灰度)
+
+
+      4'd2: begin  // HSV肤色 (时序走HSV通道)
+        final_hs  <= sync_hsv_hs;
+        final_vs  <= sync_hsv_vs;
+        final_de  <= sync_hsv_de;
+        final_rgb <= sync_hsv_de ? (is_skin ? 24'hFFFFFF : 24'h000000) : 24'd0;
+      end
+
+      4'd3, 4'd5: begin
+        final_hs  <= sync_ycbcr_hs;
+        final_vs  <= sync_ycbcr_vs;
+        final_de  <= sync_ycbcr_de;
+        // 缩放缩小、各种旋转 (图像在前端BRAM和SDRAM已处理，这里直接透传)
+        final_rgb <= sync_ycbcr_de ? sync_raw_rgb_ycbcr : 24'd0;
+
+      end
+      4'd4: begin  // 缩放放大 (走平滑滤波通道抗锯齿)
+        final_hs  <= smooth_hs;
+        final_vs  <= smooth_vs;
+        final_de  <= smooth_de;
+        final_rgb <= smooth_de ? smooth_rgb : 24'd0;
+      end
+
+      4'd6: begin  // 直方图
+        final_hs  <= equ_hs;
+        final_vs  <= equ_vs;
+        final_de  <= equ_de;
+        final_rgb <= equ_de ? {equ_Y, equ_Y, equ_Y} : 24'd0;
+      end
+
+      4'd7: begin  // 形态学
+        final_hs  <= morph_hs;
+        final_vs  <= morph_vs;
+        final_de  <= morph_de;
+        final_rgb <= morph_de ? {morph_Y, morph_Y, morph_Y} : 24'd0;
+      end
+
+      4'd8: begin  // HDR
+        final_hs  <= hdr_hs;
+        final_vs  <= hdr_vs;
+        final_de  <= hdr_de;
+        final_rgb <= hdr_de ? hdr_rgb : 24'd0;
+      end
+
+      4'd9: begin  // 双边滤波
+        final_hs  <= bil_hs;
+        final_vs  <= bil_vs;
+        final_de  <= bil_de;
+        final_rgb <= bil_de ? bil_rgb : 24'd0;
+      end
+
+      4'd10: begin  // Sobel 边缘检测
+        final_hs  <= sobel_hs;
+        final_vs  <= sobel_vs;
+        final_de  <= sobel_de;
+        final_rgb <= sobel_de ? sobel_rgb : 24'd0;
+      end
+
+      default: begin
+        final_hs  <= sync_ycbcr_hs;
+        final_vs  <= sync_ycbcr_vs;
+        final_de  <= sync_ycbcr_de;
+        final_rgb <= 24'd0;
+      end
+    endcase
+  end
+
+endmodule
