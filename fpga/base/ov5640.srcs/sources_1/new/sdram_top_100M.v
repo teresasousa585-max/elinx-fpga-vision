@@ -1,5 +1,6 @@
 // =============================================================================
 // 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 作者：Ethereal
 // 工程分区：基础图像处理工程（base）
 // 文件名称：sdram_top_100M.v
 // 主要模块：sdram_top_100M
@@ -11,7 +12,14 @@
 // 关联文件：sdram_control_100M.v、sdram_fifo_ctrl.v
 // 维护要求：修改端口、位宽、流水线延迟或模式编码时，必须同步更新上层例化与项目文档。
 // =============================================================================
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 正文导读：封装 100 MHz SDRAM 控制器与 FIFO，提供兼容的视频帧缓存接口。
+// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// [Ethereal注释] 修改约束：读写地址、突发长度、FIFO 清空和跨时钟握手必须保持一致，避免帧错位或数据溢出。
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 模块 sdram_top_100M：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module sdram_top_100M (
+    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input   wire    I_ref_clk,  // sdram 控制器参考时钟
     input   wire    I_out_clk,  // sdram 相位偏移驱动时钟
     input   wire    I_rst_n,    // 复位信号，低电平有效
@@ -54,6 +62,7 @@ module sdram_top_100M (
 );
 
   //sdram_fifo_ctrl
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   wire sdram_wr_req;
   wire [23:0] sdram_wr_addr;
   wire [15:0] sdram_wr_data;
@@ -67,10 +76,12 @@ module sdram_top_100M (
   wire sdram_rd_ack;
   wire [15:0] sdram_rd_data;
 
+  // [Ethereal注释] 组合连线组 1：从 O_sdram_dqm 开始的连续赋值随右值立即更新，不增加寄存器延迟。
   assign O_sdram_dqm = 2'b00;
   assign O_sdram_clk = I_out_clk;
 
   //sdram_fifo_ctrl
+  // [Ethereal注释] 子模块例化 1（sdram_fifo_ctrl）：协调异步读写 FIFO、突发地址和帧边界，连接视频时钟域与 SDRAM 时钟域。
   sdram_fifo_ctrl sdram_fifo_ctrl_100M (
       .I_ref_clk(I_ref_clk),  // 参考时钟
       .I_rst_n  (I_rst_n),    // 系统复位,低电平有效
@@ -112,6 +123,7 @@ module sdram_top_100M (
   );
 
   // sdram_control
+  // [Ethereal注释] 子模块例化 2（sdram_control_100M）：实现 100 MHz 工作时钟下的 SDRAM 初始化、刷新和突发读写时序。
   sdram_control_100M sdram_control_100M (
       .I_ref_clk(I_ref_clk),  // 参考时钟
       .I_rst_n  (I_rst_n),    // 复位信号，低电平有效

@@ -1,5 +1,6 @@
 // =============================================================================
 // 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 作者：Ethereal
 // 工程分区：基础图像处理工程（base）
 // 文件名称：ov5640_capture.v
 // 主要模块：ov5640_capture
@@ -13,7 +14,14 @@
 // =============================================================================
 `timescale 1ns / 1ps
 
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 正文导读：在像素时钟域采集 OV5640 RGB565 数据及同步信号，形成内部视频流。
+// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// [Ethereal注释] 修改约束：像素数据、有效信号和 HS/VS 必须保持同拍；跨时钟数据必须使用 FIFO 或握手。
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 模块 ov5640_capture：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module ov5640_capture (
+    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input wire i_pclk,
     input wire i_rst,
 
@@ -26,16 +34,20 @@ module ov5640_capture (
     output reg  [15:0] o_rgb565
 );
 
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg rst_pclk_d1, rst_pclk_d2;
+  // [Ethereal注释] 时序过程 1：由 i_pclk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge i_pclk) begin
     rst_pclk_d1 <= i_rst;
     rst_pclk_d2 <= rst_pclk_d1;
   end
 
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg vsync_d1, vsync_d2;
   reg href_d1, href_d2;
   reg [7:0] data_d1;
 
+  // [Ethereal注释] 时序过程 2：由 i_pclk negedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(negedge i_pclk) begin
     if (rst_pclk_d2) begin
       vsync_d1 <= 1'b0;
@@ -53,11 +65,14 @@ module ov5640_capture (
   end
 
   // 提取 VSYNC 下降沿作为帧起始 (OV5640默认场同步为高电平期间消隐)
+  // [Ethereal注释] 组合连线组 1：从 o_frame_vsync 开始的连续赋值随右值立即更新，不增加寄存器延迟。
   assign o_frame_vsync = vsync_d2;
 
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg       byte_flag;
   reg [7:0] data_high;
 
+  // [Ethereal注释] 时序过程 3：由 i_pclk negedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(negedge i_pclk) begin
     if (rst_pclk_d2) begin
       byte_flag <= 1'b0;

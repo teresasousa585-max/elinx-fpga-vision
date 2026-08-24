@@ -1,5 +1,6 @@
 // =============================================================================
 // 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 作者：Ethereal
 // 工程分区：基础图像处理工程（base）
 // 文件名称：CRC32_D8.v
 // 主要模块：CRC32_D8
@@ -32,6 +33,12 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 正文导读：按字节更新以太网 CRC32，生成帧校验序列。
+// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// [Ethereal注释] 修改约束：协议字段、有效脉冲和跨时钟控制必须成组更新，并与上位机及外设时序保持一致。
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 模块 CRC32_D8：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module CRC32_D8 (
     Clk,
     Reset,
@@ -42,8 +49,10 @@ module CRC32_D8 (
     Crc_eth
 );
 
+  // [Ethereal注释] 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
   parameter Tp = 1;
 
+  // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
   input Clk;
   input Reset;
   input [7:0] Data_in;
@@ -55,12 +64,15 @@ module CRC32_D8 (
 
   output [31:0] CrcNext;
 
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   wire [7:0] Data;
 
+  // [Ethereal注释] 组合连线组 1：从 Data 开始的连续赋值随右值立即更新，不增加寄存器延迟。
   assign Data = {
     Data_in[0], Data_in[1], Data_in[2], Data_in[3], Data_in[4], Data_in[5], Data_in[6], Data_in[7]
   };
 
+  // [Ethereal注释] 组合连线组 1：从 CrcNext[0] 开始的连续赋值随右值立即更新，不增加寄存器延迟。
   assign CrcNext[0] = Crc[24] ^ Crc[30] ^ Data[0] ^ Data[6];
   assign CrcNext[1] = Crc[24] ^ Crc[25] ^ Crc[30] ^ Crc[31] ^ Data[0] ^ Data[1] ^ Data[6] ^ Data[7];
   assign CrcNext[2] = Crc[24] ^ Crc[25] ^ Crc[26] ^ Crc[30] ^ Crc[31] ^ Data[0] ^ Data[1] ^ Data[2] ^ Data[6] ^ Data[7];
@@ -94,10 +106,12 @@ module CRC32_D8 (
   assign CrcNext[30] = Crc[22] ^ Crc[28] ^ Crc[31] ^ Data[4] ^ Data[7];
   assign CrcNext[31] = Crc[23] ^ Crc[29] ^ Data[5];
 
+  // [Ethereal注释] 时序过程 1：由 Clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge Clk)
     if (!Reset) Crc <= {32{1'b1}};
     else if (Enable) Crc <= #1 CrcNext;
 
+  // [Ethereal注释] 组合连线组 1：从 Crc_eth 开始的连续赋值随右值立即更新，不增加寄存器延迟。
   assign Crc_eth = ~{
 						CrcNext[24], CrcNext[25], CrcNext[26], CrcNext[27],CrcNext[28], CrcNext[29], CrcNext[30], CrcNext[31],
 						Crc[16], Crc[17], Crc[18], Crc[19],Crc[20], Crc[21], Crc[22], Crc[23],

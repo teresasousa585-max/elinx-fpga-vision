@@ -1,3 +1,13 @@
+// =============================================================================
+// 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 项目作者：Ethereal
+// 中文注释维护：Ethereal
+// 工程分区：图像增强工程（enhancement）
+// 文件名称：pll_1.v
+// 文件属性：厂商工具生成的 IP 封装；原始版权与许可声明在下方完整保留。
+// 中文说明：封装锁相环 IP，生成指定频率与相位关系的内部时钟。
+// 维护要求：重新生成 IP 可能覆盖中文注释；修改参数后须同步检查 QSF 引用和上层端口。
+// =============================================================================
 //#PLL
 //#N_m=1
 //#M_m=24
@@ -30,6 +40,12 @@
 //#C3_pha=10
 //#C3_pha_8=0
 `timescale 1 ps / 1 ps
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 正文导读：封装锁相环 IP，生成指定频率与相位关系的内部时钟。
+// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// [Ethereal注释] 修改约束：该文件为厂商 IP 封装；参数、端口或例化修改后必须重新生成并复核上层连接。
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 模块 pll_1：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module pll_1(
 	areset,
 	inclk0,
@@ -39,6 +55,7 @@ module pll_1(
 	c3,
 	locked);
 
+	// [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
 	input	areset;
 	input	inclk0;
 	output	c0;
@@ -46,12 +63,15 @@ module pll_1(
 	output	c2;
 	output	c3;
 	output	locked;
+	// [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
 	wire[5:0] wireC;
+	// [Ethereal注释] 组合连线组 1：从 c0 开始的连续赋值随右值立即更新，不增加寄存器延迟。
 	assign c0 = wireC[0];
 	assign c1 = wireC[1];
 	assign c2 = wireC[2];
 	assign c3 = wireC[3];
 
+	// [Ethereal注释] 子模块例化 1（altpll）：调用 PLL 原语，配置内部时钟的频率、相位和占空比。
 	altpll	altpll_component (
 				.inclk ({1'h0, inclk0}),
 				.pllena (1'b1),
@@ -87,6 +107,7 @@ module pll_1(
 				.sclkout1 (),
 				.vcooverrange (),
 				.vcounderrange ());
+	// [Ethereal注释] IP 参数区：配置厂商原语的深度、宽度、寄存器级和目标器件属性。
 	defparam
 		altpll_component.clk0_divide_by = 12,
 		altpll_component.clk0_duty_cycle = 50,

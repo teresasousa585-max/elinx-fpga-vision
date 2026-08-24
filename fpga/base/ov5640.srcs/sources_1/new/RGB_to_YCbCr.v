@@ -1,5 +1,6 @@
 // =============================================================================
 // 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 作者：Ethereal
 // 工程分区：基础图像处理工程（base）
 // 文件名称：RGB_to_YCbCr.v
 // 主要模块：RGB_to_YCbCr
@@ -13,7 +14,14 @@
 // =============================================================================
 `timescale 1 ns / 1 ps
 
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 正文导读：将 RGB888 像素转换为 YCbCr，分离亮度与色度分量，供滤波、增强和分析算法使用。
+// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// [Ethereal注释] 修改约束：像素数据、有效信号和 HS/VS 必须保持同拍；跨时钟数据必须使用 FIFO 或握手。
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 模块 RGB_to_YCbCr：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module RGB_to_YCbCr (
+    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input wire    i_clk,
     input wire    i_rst,
     input wire    i_hs,
@@ -26,6 +34,7 @@ module RGB_to_YCbCr (
     output wire [23:0] o_ycbcr
 );
 
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   wire [7:0] r = i_rgb[23:16];
   wire [7:0] g = i_rgb[15:8];
   wire [7:0] b = i_rgb[7:0];
@@ -38,6 +47,7 @@ module RGB_to_YCbCr (
   reg [15:0] mult_r_128, mult_g_107, mult_b_21;
   reg [2:0] sync_d1;
 
+  // [Ethereal注释] 时序过程 1：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge i_clk) begin
     if (i_rst) begin
       {mult_r_77, mult_g_150, mult_b_29} <= 0;
@@ -48,6 +58,7 @@ module RGB_to_YCbCr (
     end
   end
 
+  // [Ethereal注释] 时序过程 2：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge i_clk) begin
     if (i_rst) begin
       {mult_r_43, mult_g_85, mult_b_128} <= 0;
@@ -58,6 +69,7 @@ module RGB_to_YCbCr (
     end
   end
 
+  // [Ethereal注释] 时序过程 3：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge i_clk) begin
     if (i_rst) begin
       {mult_r_128, mult_g_107, mult_b_21} <= 0;
@@ -68,6 +80,7 @@ module RGB_to_YCbCr (
     end
   end
 
+  // [Ethereal注释] 时序过程 4：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge i_clk) begin
     if (i_rst) begin
       sync_d1 <= 0;
@@ -76,9 +89,11 @@ module RGB_to_YCbCr (
     end
   end
 
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [15:0] add_y, add_cb, add_cr;
   reg [2:0] sync_d2;
 
+  // [Ethereal注释] 时序过程 5：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge i_clk) begin
     if (i_rst) begin
       {add_y, add_cb, add_cr} <= 0;
@@ -94,9 +109,11 @@ module RGB_to_YCbCr (
   // ==========================================
   // Stage 3: 移位取高 8 位并输出
   // ==========================================
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [23:0] oycbcr;
   reg ohs, ovs, odata_en;
 
+  // [Ethereal注释] 时序过程 6：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge i_clk) begin
     if (i_rst) begin
       oycbcr <= 0;
@@ -109,6 +126,7 @@ module RGB_to_YCbCr (
     end
   end
 
+  // [Ethereal注释] 组合连线组 1：从 o_hs 开始的连续赋值随右值立即更新，不增加寄存器延迟。
   assign o_hs = ohs;
   assign o_vs = ovs;
   assign o_data_en = odata_en;

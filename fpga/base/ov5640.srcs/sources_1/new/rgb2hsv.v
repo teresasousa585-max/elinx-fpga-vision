@@ -1,5 +1,6 @@
 // =============================================================================
 // 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 作者：Ethereal
 // 工程分区：基础图像处理工程（base）
 // 文件名称：rgb2hsv.v
 // 主要模块：rgb2hsv
@@ -15,7 +16,14 @@
 
 `timescale 1ns / 1ps
 
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 正文导读：完成 RGB 到 HSV 的定点转换，为肤色区域识别等基于色调和饱和度的处理提供数据。
+// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// [Ethereal注释] 修改约束：像素数据、有效信号和 HS/VS 必须保持同拍；跨时钟数据必须使用 FIFO 或握手。
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 模块 rgb2hsv：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module rgb2hsv (
+    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input wire clk,
     input wire rst,
 
@@ -31,6 +39,7 @@ module rgb2hsv (
     output reg [23:0] o_raw_rgb
 );
 
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   wire [7:0] r = i_rgb[23:16];
   wire [7:0] g = i_rgb[15:8];
   wire [7:0] b = i_rgb[7:0];
@@ -45,6 +54,7 @@ module rgb2hsv (
   reg [23:0] raw_rgb_d[10:0];
 
   integer k;
+  // [Ethereal注释] 时序过程 1：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     // 将输入信号推入移位寄存器的最低位，其余位左移
     hs_d <= {hs_d[9:0], i_hs};
@@ -59,6 +69,7 @@ module rgb2hsv (
   end
 
   // 第 1 级：求极值 MAX, MIN 和差值 Delta
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   wire [7:0] max_rg = (r > g) ? r : g;
   wire [7:0] max_rgb = (max_rg > b) ? max_rg : b;
   wire [7:0] min_rg = (r < g) ? r : g;
@@ -66,6 +77,7 @@ module rgb2hsv (
 
   reg [7:0] max_val, delta, r_d1, g_d1, b_d1;
 
+  // [Ethereal注释] 时序过程 2：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     max_val <= max_rgb;
     delta <= max_rgb - min_rgb;
@@ -75,11 +87,13 @@ module rgb2hsv (
   end
 
   // 第 2 级：准备 IP 核需要的分子 (Numerator)
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [15:0] s_num, h_num;
   reg [7:0] h_offset;
   reg       h_sign;
   reg [7:0] v_d2;
 
+  // [Ethereal注释] 时序过程 3：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     v_d2  <= max_val;
     s_num <= delta * 8'd255;
@@ -105,9 +119,11 @@ module rgb2hsv (
 
 
   // 第 3~10 级：IP 核除法运算 (耗时 8 拍)
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   wire [15:0] s_quo, h_quo;
 
   // 调用除法 IP 核 
+  // [Ethereal注释] 子模块例化 1（hsv_divide）：封装定点除法器 IP，输出商与余数供颜色空间转换使用。
   hsv_divide u_div_s (
       .clock   (clk),
       .numer   (s_num),
@@ -116,6 +132,7 @@ module rgb2hsv (
       .remain  ()
   );
 
+  // [Ethereal注释] 子模块例化 2（hsv_divide）：封装定点除法器 IP，输出商与余数供颜色空间转换使用。
   hsv_divide u_div_h (
       .clock   (clk),
       .numer   (h_num),
@@ -125,11 +142,13 @@ module rgb2hsv (
   );
 
   // 除法器在算的这 8 拍里，V、h_offset、h_sign 也必须打 8 拍跟着一起走
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg     [7:0] v_delay       [7:0];
   reg     [7:0] h_offset_delay[7:0];
   reg           h_sign_delay  [7:0];
 
   integer       j;
+  // [Ethereal注释] 时序过程 4：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     v_delay[0] <= v_d2;
     h_offset_delay[0] <= h_offset;
@@ -143,6 +162,7 @@ module rgb2hsv (
 
 
   // 第 11 级：合并输出
+  // [Ethereal注释] 时序过程 5：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     if (rst) begin
       o_hs <= 0;

@@ -1,5 +1,6 @@
 // =============================================================================
 // 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 作者：Ethereal
 // 工程分区：图像增强工程（enhancement）
 // 文件名称：sdram_fifo_ctrl.v
 // 主要模块：sdram_fifo_ctrl
@@ -13,7 +14,14 @@
 // =============================================================================
 `timescale 1ns / 1ps
 
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 正文导读：协调异步读写 FIFO、突发地址和帧边界，连接视频时钟域与 SDRAM 时钟域。
+// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// [Ethereal注释] 修改约束：读写地址、突发长度、FIFO 清空和跨时钟握手必须保持一致，避免帧错位或数据溢出。
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 模块 sdram_fifo_ctrl：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module sdram_fifo_ctrl (
+    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input wire I_ref_clk,  // 参考时钟
     input wire I_rst_n,    // 系统复位,低电平有效
 
@@ -54,6 +62,7 @@ module sdram_fifo_ctrl (
 );
 
   // 写fifo数据清空信号缓存
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg fifo_wr_load_r1;
   reg fifo_wr_load_r2;
   // 读fifo数据清空缓存
@@ -86,6 +95,7 @@ module sdram_fifo_ctrl (
   // -------------------------------------------------------------
   // 信号打拍与边沿检测
   // -------------------------------------------------------------
+  // [Ethereal注释] 时序过程 1：由 I_ref_clk posedge，I_rst_n negedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge I_ref_clk or negedge I_rst_n) begin
     if (I_rst_n == 1'b0) begin
       fifo_wr_load_r1 <= 1'b0;
@@ -96,6 +106,7 @@ module sdram_fifo_ctrl (
     end
   end
 
+  // [Ethereal注释] 时序过程 2：由 I_ref_clk posedge，I_rst_n negedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge I_ref_clk or negedge I_rst_n) begin
     if (I_rst_n == 1'b0) begin
       fifo_rd_load_r1 <= 1'b0;
@@ -106,6 +117,7 @@ module sdram_fifo_ctrl (
     end
   end
 
+  // [Ethereal注释] 时序过程 3：由 I_ref_clk posedge，I_rst_n negedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge I_ref_clk or negedge I_rst_n) begin
     if (I_rst_n == 1'b0) begin
       sdram_wr_ack1 <= 1'b0;
@@ -116,6 +128,7 @@ module sdram_fifo_ctrl (
     end
   end
 
+  // [Ethereal注释] 时序过程 4：由 I_ref_clk posedge，I_rst_n negedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge I_ref_clk or negedge I_rst_n) begin
     if (I_rst_n == 1'b0) begin
       sdram_rd_ack1 <= 1'b0;
@@ -126,6 +139,7 @@ module sdram_fifo_ctrl (
     end
   end
 
+  // [Ethereal注释] 时序过程 5：由 I_ref_clk posedge，I_rst_n negedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge I_ref_clk or negedge I_rst_n) begin
     if (I_rst_n == 1'b0) begin
       sdram_rd_valid1 <= 1'b0;
@@ -137,14 +151,17 @@ module sdram_fifo_ctrl (
   end
 
   // 边沿提取赋值
+  // [Ethereal注释] 组合连线组 1：从 fifo_wr_load_p 开始的连续赋值随右值立即更新，不增加寄存器延迟。
   assign fifo_wr_load_p = (~fifo_wr_load_r2) & fifo_wr_load_r1;
   assign fifo_rd_load_p = (~fifo_rd_load_r2) & fifo_rd_load_r1;
   assign sdram_wr_ack_n = sdram_wr_ack2 & (~sdram_wr_ack1);
   assign sdram_rd_ack_n = sdram_rd_ack2 & (~sdram_rd_ack1);
 
   // 乒乓操作 - 写入地址逻辑 (基于帧脉冲强制切换)
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg rw_bank_flag;  // 0:写Bank0, 1:写Bank1
 
+  // [Ethereal注释] 时序过程 6：由 I_ref_clk posedge，I_rst_n negedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge I_ref_clk or negedge I_rst_n) begin
     if (I_rst_n == 1'b0) begin
       O_sdram_wr_addr <= 24'd0;
@@ -168,6 +185,7 @@ module sdram_fifo_ctrl (
   end
 
   // 乒乓操作 - 读取地址逻辑
+  // [Ethereal注释] 时序过程 7：由 I_ref_clk posedge，I_rst_n negedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge I_ref_clk or negedge I_rst_n) begin
     if (I_rst_n == 1'b0) begin
       O_sdram_rd_addr <= 24'd0;
@@ -188,6 +206,7 @@ module sdram_fifo_ctrl (
   end
 
   // SDRAM 读写请求产生模块
+  // [Ethereal注释] 时序过程 8：由 I_ref_clk posedge，I_rst_n negedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge I_ref_clk or negedge I_rst_n) begin
     if (I_rst_n == 1'b0) begin
       O_sdram_wr_req <= 1'b0;
@@ -214,6 +233,7 @@ module sdram_fifo_ctrl (
 // -------------------------------------------------------------
   // 核心时序优化：纯寄存器直驱 + 流水线打拍缓解高扇出
   // -------------------------------------------------------------
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg wr_fifo_aclr_reg_d1;
   reg rd_fifo_aclr_reg_d1;
   
@@ -221,6 +241,7 @@ module sdram_fifo_ctrl (
   reg wr_fifo_aclr_reg_final;
   reg rd_fifo_aclr_reg_final;
 
+  // [Ethereal注释] 时序过程 9：由 I_ref_clk posedge，I_rst_n negedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge I_ref_clk or negedge I_rst_n) begin
     if (!I_rst_n) begin
       // 1. 全局硬件复位时，寄存器被异步置 1
@@ -243,6 +264,7 @@ module sdram_fifo_ctrl (
   // ==========================================
   // FIFO 例化：连接最终打过拍的寄存器
   // ==========================================
+  // [Ethereal注释] 子模块例化 1（sdram_wr_fifo）：封装 FIFO IP，在数据通路中完成缓存、速率匹配或跨时钟域传输。
   sdram_wr_fifo sdram_wr_fifo_inst (
       .wrclk  (I_fifo_wr_clk),
       .wrreq  (I_fifo_wr_req),
@@ -254,6 +276,7 @@ module sdram_fifo_ctrl (
       .rdusedw(wr_fifo_use)
   );
 
+  // [Ethereal注释] 子模块例化 2（sdram_rd_fifo）：封装 FIFO IP，在数据通路中完成缓存、速率匹配或跨时钟域传输。
   sdram_rd_fifo sdram_rd_fifo_inst (
       .wrclk  (I_ref_clk),
       .wrreq  (I_sdram_rd_ack),

@@ -1,5 +1,6 @@
 // =============================================================================
 // 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 作者：Ethereal
 // 工程分区：基础图像处理工程（base）
 // 文件名称：hdr_tone_mapping_color.v
 // 主要模块：hdr_tone_mapping_color
@@ -12,7 +13,14 @@
 // 维护要求：修改端口、位宽、流水线延迟或模式编码时，必须同步更新上层例化与项目文档。
 // =============================================================================
 `timescale 1ns / 1ps
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 正文导读：根据亮度分量执行定点色调映射，并保持彩色信息，实现硬件 HDR 动态范围压缩。
+// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// [Ethereal注释] 修改约束：像素数据、有效信号和 HS/VS 必须保持同拍；跨时钟数据必须使用 FIFO 或握手。
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 模块 hdr_tone_mapping_color：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module hdr_tone_mapping_color (
+    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input wire clk,
     input wire rst,
 
@@ -31,11 +39,13 @@ module hdr_tone_mapping_color (
 );
 
   // --- 1. 全局均值计算 (保持不变) ---
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [35:0] frame_sum;
   reg [ 7:0] l_avg;
   reg vs_d1, vs_d2;
   wire eof = (vs_d1 && !vs_d2);
 
+  // [Ethereal注释] 时序过程 1：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     if (rst) begin
       vs_d1 <= 0;
@@ -54,8 +64,10 @@ module hdr_tone_mapping_color (
   end
 
   // 计算全局增益与方向
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [7:0] gain_val;
   reg is_dark;
+  // [Ethereal注释] 时序过程 2：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     if (l_avg < 128) begin
       is_dark  <= 1'b1;
@@ -67,6 +79,7 @@ module hdr_tone_mapping_color (
   end
 
   // 提取各通道原值
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   wire [7:0] R_in = din_rgb[23:16];
   wire [7:0] G_in = din_rgb[15:8];
   wire [7:0] B_in = din_rgb[7:0];
@@ -81,6 +94,7 @@ module hdr_tone_mapping_color (
   (* ramstyle = "logic" *) reg vs_d_sync1, vs_d_sync2, vs_d_sync3, vs_d_sync4, vs_d_sync5;
   (* ramstyle = "logic" *) reg is_dark_d1, is_dark_d2, is_dark_d3, is_dark_d4;
 
+  // [Ethereal注释] 时序过程 3：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     // RGB Data
     rgb_d1 <= din_rgb;
@@ -114,7 +128,9 @@ module hdr_tone_mapping_color (
   // ================= 核心处理 6 级流水线 =================
 
   // --- Pipeline Stage 1: 预计算减法 ---
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [7:0] inv_R, inv_G, inv_B;
+  // [Ethereal注释] 时序过程 4：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     inv_R <= 8'd255 - R_in;
     inv_G <= 8'd255 - G_in;
@@ -124,6 +140,7 @@ module hdr_tone_mapping_color (
   // --- Pipeline Stage 2: 第一级乘法 (算抛物线) ---
   // Quartus 专属属性，强制使用 DSP
   (* multstyle = "dsp" *) reg [15:0] diff_mult_r, diff_mult_g, diff_mult_b;
+  // [Ethereal注释] 时序过程 5：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     diff_mult_r <= rgb_d1[23:16] * inv_R;
     diff_mult_g <= rgb_d1[15:8] * inv_G;
@@ -132,6 +149,7 @@ module hdr_tone_mapping_color (
 
   // --- Pipeline Stage 3: 第二级乘法 (算最终偏移) ---
   (* multstyle = "dsp" *) reg [23:0] offset_r_full, offset_g_full, offset_b_full;
+  // [Ethereal注释] 时序过程 6：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     offset_r_full <= {16'd0, gain_val} * {8'd0, diff_mult_r};
     offset_g_full <= {16'd0, gain_val} * {8'd0, diff_mult_g};
@@ -139,6 +157,7 @@ module hdr_tone_mapping_color (
   end
 
   // 提取偏移量高 8 位 (相当于除以 32768)
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   wire [7:0] offset_r = offset_r_full[23:15];
   wire [7:0] offset_g = offset_g_full[23:15];
   wire [7:0] offset_b = offset_b_full[23:15];
@@ -146,6 +165,7 @@ module hdr_tone_mapping_color (
   // --- Pipeline Stage 4: 加减法 (使用 9-bit 容纳溢出位) ---
   // 最高位 [8] 用于后续 Stage 5 的饱和判断
   reg [8:0] R_sum, G_sum, B_sum;
+  // [Ethereal注释] 时序过程 7：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     if (is_dark_d3) begin  // 暗环境：做加法
       R_sum <= {1'b0, rgb_d3[23:16]} + {1'b0, offset_r};
@@ -159,7 +179,9 @@ module hdr_tone_mapping_color (
   end
 
   // --- Pipeline Stage 5: 饱和截断逻辑 ---
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [7:0] R_final, G_final, B_final;
+  // [Ethereal注释] 时序过程 8：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     if (is_dark_d4) begin
       // 加法溢出判断：如果第9位为1，说明超出了255
@@ -175,6 +197,7 @@ module hdr_tone_mapping_color (
   end
 
   // --- Pipeline Stage 6: 数据输出 ---
+  // [Ethereal注释] 时序过程 9：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     if (rst) begin
       hs_out    <= 0;

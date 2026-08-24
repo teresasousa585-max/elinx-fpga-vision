@@ -1,5 +1,6 @@
 // =============================================================================
 // 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 作者：Ethereal
 // 工程分区：图像增强工程（enhancement）
 // 文件名称：anguang_guided.v
 // 主要模块：anguang_guided
@@ -12,10 +13,18 @@
 // 维护要求：修改端口、位宽、流水线延迟或模式编码时，必须同步更新上层例化与项目文档。
 // =============================================================================
 `timescale 1 ns/ 1 ps
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 正文导读：通过引导滤波估计平滑照度分量，为暗光增益计算提供基础数据。
+// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// [Ethereal注释] 修改约束：像素数据、有效信号和 HS/VS 必须保持同拍；跨时钟数据必须使用 FIFO 或握手。
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 模块 anguang_guided：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module anguang_guided#(
+// [Ethereal注释] 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
 parameter H_TOTAL = 11'd1344, // 每行总时钟数（含消隐区）
 parameter EPSILON=16'd2000 // 平滑强度控制参数，越大越平滑
 )(
+    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input  wire        i_clk,
     input  wire        i_rst, 
     
@@ -31,6 +40,7 @@ parameter EPSILON=16'd2000 // 平滑强度控制参数，越大越平滑
     output wire [7:0]  o_y,
     output  wire [23:0]  o_rgb
 );
+// [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
 wire m1_hs,m1_vs,m1_de;
 wire m2_hs,m2_vs,m2_de;
 wire m3_hs,m3_vs,m3_de;
@@ -46,6 +56,7 @@ wire [23:0] center_rgb;
 wire [10:0] col_sum_y;
 wire [18:0] col_sum_y2;
 
+// [Ethereal注释] 子模块例化 1（guided_line_buffer）：构造引导图的局部窗口，输出均值与方差计算所需的邻域数据。
 guided_line_buffer #(
    .H_TOTAL(H_TOTAL) 
 )u_line_buffer_anguang (
@@ -68,7 +79,9 @@ guided_line_buffer #(
     .o_center_rgb(center_rgb)
 );
 
+// [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
 wire [23:0] center_rgb_d1;
+// [Ethereal注释] 子模块例化 2（box_filter_y）：对引导图窗口执行盒式滤波，得到局部亮度均值及相关统计量。
 box_filter_y u_box_filter_y_anguang (
     .i_clk(i_clk),
     .i_rst(i_rst),
@@ -90,10 +103,12 @@ box_filter_y u_box_filter_y_anguang (
     .o_de_sync(m2_de)
 );
 
+// [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
 wire [11:0] a_val;
 wire [11:0] b_val;
 wire [23:0] ycbcr_sync1;
 wire [23:0] center_rgb_d2;
+// [Ethereal注释] 子模块例化 3（guided_var_a_b）：根据局部统计量计算引导滤波线性系数 a、b。
 guided_var_a_b #(
     .EPSILON(EPSILON) // 平滑强度控制参数
 )u_guided_var_a_b_anguang (
@@ -115,10 +130,12 @@ guided_var_a_b #(
     .o_de_out(m3_de)
 );
 
+// [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
 wire [14:0] col_sum_a;
 wire [14:0] col_sum_b;
 wire [23:0] ycbcr_sync2;
 wire [23:0] center_rgb_d3;
+// [Ethereal注释] 子模块例化 4（guided_line_buffer_a_b）：缓存系数 a、b 并构造其局部窗口，为系数均值计算提供数据。
 guided_line_buffer_a_b #(
     .H_TOTAL(H_TOTAL)
 )u_line_buffer_a_b (
@@ -139,10 +156,12 @@ guided_line_buffer_a_b #(
     .o_vs_center(m4_vs),
     .o_de_center(m4_de)
 );
+// [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
 wire [23:0] ycbcr_sync3;
 wire [11:0] mean_a;
 wire [11:0] mean_b;
 wire [23:0] center_rgb_d4;
+// [Ethereal注释] 子模块例化 5（box_filter_ab）：对线性系数 a、b 执行盒式均值滤波，并对齐中心像素旁路。
 box_filter_ab u_box_filter_ab (
     .i_clk(i_clk),
     .i_rst(i_rst),
@@ -163,8 +182,10 @@ box_filter_ab u_box_filter_ab (
     .o_vs_sync(m5_vs),
     .o_de_sync(m5_de)
 );
+// [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
 wire [23:0] final_ycbcr;
 wire [23:0] center_rgb_d5;
+// [Ethereal注释] 子模块例化 6（guided_final_rebuild）：使用均值系数和中心引导值重建滤波输出 q=mean(a)×I+mean(b)。
 guided_final_rebuild u_guided_final_rebuild (
     .i_clk(i_clk),
     .i_rst(i_rst),  
@@ -182,6 +203,7 @@ guided_final_rebuild u_guided_final_rebuild (
     .o_vs_out(m6_vs),      // 最终输出的 VSYNC 信号
     .o_de_out(m6_de)       // 最终输出的数据使能信号
 );
+// [Ethereal注释] 组合连线组 1：从 o_hs_out 开始的连续赋值随右值立即更新，不增加寄存器延迟。
 assign o_hs_out = m6_hs;
 assign o_vs_out = m6_vs;
 assign o_de_out = m6_de;

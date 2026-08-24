@@ -1,5 +1,6 @@
 // =============================================================================
 // 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 作者：Ethereal
 // 工程分区：图像增强工程（enhancement）
 // 文件名称：i2c_sll9134.v
 // 主要模块：sii9134_i2c_init
@@ -13,9 +14,17 @@
 // =============================================================================
 `timescale 1ns / 1ps
 
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 正文导读：通过 I2C 初始化 SII9134 HDMI 发送器寄存器。
+// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// [Ethereal注释] 修改约束：协议字段、有效脉冲和跨时钟控制必须成组更新，并与上位机及外设时序保持一致。
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 模块 sii9134_i2c_init：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module sii9134_i2c_init #(
+    // [Ethereal注释] 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
     parameter CLK_FRE = 100
 ) (
+    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input wire i_clk,
     input wire i_rst,
 
@@ -25,13 +34,16 @@ module sii9134_i2c_init #(
     output reg  o_err
 );
 
+  // [Ethereal注释] 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
   localparam DEV_ADDR = 8'h76;
   localparam REG_NUM = 6;
 
   localparam DIV_CNT_MAX = (CLK_FRE * 1000000) / 400000 - 1;
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [15:0] clk_cnt;
   reg i2c_tick;
 
+  // [Ethereal注释] 时序过程 1：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge i_clk) begin
     if (i_rst) begin
       clk_cnt  <= 0;
@@ -45,9 +57,12 @@ module sii9134_i2c_init #(
     end
   end
 
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [15:0] lut_data;
   reg [ 3:0] lut_index;
+  // [Ethereal注释] 组合过程 1：根据当前输入/状态计算结果；所有输出须在各分支完整赋值以避免锁存器。
   always @(*) begin
+    // [Ethereal注释] 分支选择 1：依据 lut_index 选择状态或算法路径；default 覆盖非法或空闲条件。
     case (lut_index)
       4'd0: lut_data = {8'h08, 8'h35};
       4'd1: lut_data = {8'h09, 8'h00};
@@ -59,6 +74,7 @@ module sii9134_i2c_init #(
     endcase
   end
 
+  // [Ethereal注释] 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
   localparam S_IDLE = 4'd0;
   localparam S_START = 4'd1;
   localparam S_SEND_BYTE = 4'd2;
@@ -68,6 +84,7 @@ module sii9134_i2c_init #(
   localparam S_STOP_ERR = 4'd6;  // 出错时释放总线
   localparam S_ERR_RETRY = 4'd7;  // 延时重试
 
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [ 3:0] state;
   reg [ 1:0] step;
   reg [ 3:0] bit_cnt;
@@ -77,9 +94,11 @@ module sii9134_i2c_init #(
 
   reg r_scl, r_sda;
   //SCL 和 SDA 全部配置为纯开漏输出
+  // [Ethereal注释] 组合连线组 1：从 io_i2c_scl 开始的连续赋值随右值立即更新，不增加寄存器延迟。
   assign io_i2c_scl = r_scl ? 1'bz : 1'b0;
   assign io_i2c_sda = r_sda ? 1'bz : 1'b0;
 
+  // [Ethereal注释] 时序过程 2：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge i_clk) begin
     if (i_rst) begin
       state       <= S_IDLE;
@@ -93,6 +112,7 @@ module sii9134_i2c_init #(
       o_err       <= 1'b0;
       delay_cnt   <= 0;
     end else if (i2c_tick) begin
+      // [Ethereal注释] 分支选择 2：依据 state 选择状态或算法路径；default 覆盖非法或空闲条件。
       case (state)
         S_IDLE: begin
           r_scl <= 1'b1;
@@ -111,6 +131,7 @@ module sii9134_i2c_init #(
         end
 
         S_START: begin
+          // [Ethereal注释] 分支选择 3：依据 step 选择状态或算法路径；default 覆盖非法或空闲条件。
           case (step)
             0: begin
               r_scl <= 1'b1;
@@ -139,6 +160,7 @@ module sii9134_i2c_init #(
         end
 
         S_SEND_BYTE: begin
+          // [Ethereal注释] 分支选择 4：依据 step 选择状态或算法路径；default 覆盖非法或空闲条件。
           case (step)
             0: begin
               r_scl <= 1'b0;
@@ -167,6 +189,7 @@ module sii9134_i2c_init #(
         end
 
         S_ACK: begin
+          // [Ethereal注释] 分支选择 5：依据 step 选择状态或算法路径；default 覆盖非法或空闲条件。
           case (step)
             0: begin
               r_scl <= 1'b0;
@@ -206,6 +229,7 @@ module sii9134_i2c_init #(
 
         // 正常的完成一次寄存器写入
         S_STOP: begin
+          // [Ethereal注释] 分支选择 6：依据 step 选择状态或算法路径；default 覆盖非法或空闲条件。
           case (step)
             0: begin
               r_scl <= 1'b0;
@@ -232,6 +256,7 @@ module sii9134_i2c_init #(
 
         // 报错后的总线安全释放
         S_STOP_ERR: begin
+          // [Ethereal注释] 分支选择 7：依据 step 选择状态或算法路径；default 覆盖非法或空闲条件。
           case (step)
             0: begin
               r_scl <= 1'b0;

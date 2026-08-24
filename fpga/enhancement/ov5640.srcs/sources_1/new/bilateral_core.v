@@ -1,5 +1,6 @@
 // =============================================================================
 // 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 作者：Ethereal
 // 工程分区：图像增强工程（enhancement）
 // 文件名称：bilateral_core.v
 // 主要模块：bilateral_core
@@ -13,7 +14,14 @@
 // =============================================================================
 `timescale 1 ns/ 1 ps
 
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 正文导读：根据空间距离和像素差计算双边权重，对中心像素进行保边平滑。
+// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// [Ethereal注释] 修改约束：像素数据、有效信号和 HS/VS 必须保持同拍；跨时钟数据必须使用 FIFO 或握手。
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 模块 bilateral_core：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module bilateral_core (
+    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input  wire        i_clk,
     input  wire        i_rst,
     
@@ -33,11 +41,13 @@ module bilateral_core (
 );
 
     // 空间权重常量定义 (放大了 255 倍)
+    // [Ethereal注释] 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
     localparam [7:0] W_SP_CENTER = 8'd128;
     localparam [7:0] W_SP_EDGE   = 8'd78;
     localparam [7:0] W_SP_CORNER = 8'd47;
 
     // 提取 9 个像素的 Y 分量 (高 8 位)
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     wire [7:0] y11 = i_p11[23:16]; wire [7:0] y12 = i_p12[23:16]; wire [7:0] y13 = i_p13[23:16];
     wire [7:0] y21 = i_p21[23:16]; wire [7:0] y22 = i_p22[23:16]; wire [7:0] y23 = i_p23[23:16];
     wire [7:0] y31 = i_p31[23:16]; wire [7:0] y32 = i_p32[23:16]; wire [7:0] y33 = i_p33[23:16];
@@ -48,6 +58,7 @@ module bilateral_core (
     reg  [26:0] packet_delay [0:10]; 
     integer i;
 
+    // [Ethereal注释] 时序过程 1：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
     always @(posedge i_clk) begin
         if (i_rst) begin
             for(i=0; i<11; i=i+1) packet_delay[i] <= 27'd0;
@@ -57,9 +68,11 @@ module bilateral_core (
         end
     end
     //Stage 1 : 计算亮度差绝对值
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     reg [7:0] d11, d12, d13, d21, d23, d31, d32, d33;
     reg [7:0] y11_d1, y12_d1, y13_d1, y21_d1, y22_d1, y23_d1, y31_d1, y32_d1, y33_d1;
 
+    // [Ethereal注释] 时序过程 2：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
     always @(posedge i_clk) begin
         d11 <= (y11 > y22) ? (y11 - y22) : (y22 - y11);
         d12 <= (y12 > y22) ? (y12 - y22) : (y22 - y12);
@@ -73,24 +86,36 @@ module bilateral_core (
         {y11,   y12,   y13,    y21,   y22,   y23,    y31,   y32,   y33};
     end
     // Stage 2 (T=2 & T=3): ROM 查表获取值域权重
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     wire [7:0] wr11_w, wr12_w, wr13_w, wr21_w, wr23_w, wr31_w, wr32_w, wr33_w;
     reg [7:0] wr22_w; // 中心像素权重恒定为 255，单独寄存即可
     reg [7:0] wr11, wr12, wr13, wr21, wr22, wr23, wr31, wr32, wr33;
+    // [Ethereal注释] 子模块例化 1（rom_8_256）：封装只读存储器 IP，提供算法查找表或定点运算常量。
     rom_8_256 u_r11 (.address(d11), .clock(i_clk), .q(wr11_w));
+    // [Ethereal注释] 子模块例化 2（rom_8_256）：封装只读存储器 IP，提供算法查找表或定点运算常量。
     rom_8_256 u_r12 (.address(d12), .clock(i_clk), .q(wr12_w));
+    // [Ethereal注释] 子模块例化 3（rom_8_256）：封装只读存储器 IP，提供算法查找表或定点运算常量。
     rom_8_256 u_r13 (.address(d13), .clock(i_clk), .q(wr13_w));
+    // [Ethereal注释] 子模块例化 4（rom_8_256）：封装只读存储器 IP，提供算法查找表或定点运算常量。
     rom_8_256 u_r21 (.address(d21), .clock(i_clk), .q(wr21_w));
+    // [Ethereal注释] 子模块例化 5（rom_8_256）：封装只读存储器 IP，提供算法查找表或定点运算常量。
     rom_8_256 u_r23 (.address(d23), .clock(i_clk), .q(wr23_w));
+    // [Ethereal注释] 子模块例化 6（rom_8_256）：封装只读存储器 IP，提供算法查找表或定点运算常量。
     rom_8_256 u_r31 (.address(d31), .clock(i_clk), .q(wr31_w));
+    // [Ethereal注释] 子模块例化 7（rom_8_256）：封装只读存储器 IP，提供算法查找表或定点运算常量。
     rom_8_256 u_r32 (.address(d32), .clock(i_clk), .q(wr32_w));
+    // [Ethereal注释] 子模块例化 8（rom_8_256）：封装只读存储器 IP，提供算法查找表或定点运算常量。
     rom_8_256 u_r33 (.address(d33), .clock(i_clk), .q(wr33_w));
+    // [Ethereal注释] 时序过程 3：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
     always @(posedge i_clk) begin
         wr22_w<= 8'd255; // 中心像素权重恒定为 255
     end
     // 手动打 1 拍寄存，确保 ROM 输出稳定对齐后续流水线
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     reg [7:0] y11_d2, y12_d2, y13_d2, y21_d2, y22_d2, y23_d2, y31_d2, y32_d2, y33_d2;
     reg [7:0] y11_d3, y12_d3, y13_d3, y21_d3, y22_d3, y23_d3, y31_d3, y32_d3, y33_d3;
 
+    // [Ethereal注释] 时序过程 4：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
     always @(posedge i_clk) begin
         wr11 <= wr11_w; wr12 <= wr12_w; wr13 <= wr13_w;
         wr21 <= wr21_w; wr22 <= wr22_w; wr23 <= wr23_w;
@@ -100,9 +125,11 @@ module bilateral_core (
     end
 
     // Stage 3 (T=4): 计算混合总权重 W_total
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     reg [15:0] wt11, wt12, wt13, wt21, wt22, wt23, wt31, wt32, wt33;
     reg [7:0]  y11_d4, y12_d4, y13_d4, y21_d4, y22_d4, y23_d4, y31_d4, y32_d4, y33_d4;
 
+    // [Ethereal注释] 时序过程 5：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
     always @(posedge i_clk) begin
         wt11 <= wr11 * W_SP_CORNER; wt12 <= wr12 * W_SP_EDGE; wt13 <= wr13 * W_SP_CORNER;
         wt21 <= wr21 * W_SP_EDGE;   wt22 <= wr22 * W_SP_CENTER;wt23 <= wr23 * W_SP_EDGE; 
@@ -113,9 +140,11 @@ module bilateral_core (
     end
 
     // Stage 4 (T=5): 像素加权乘法 ,权重累加
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     reg [23:0] pwt11, pwt12, pwt13, pwt21, pwt22, pwt23, pwt31, pwt32, pwt33;
     reg [17:0] w_sum_l1_1, w_sum_l1_2, w_sum_l1_3;
 
+    // [Ethereal注释] 时序过程 6：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
     always @(posedge i_clk) begin
         pwt11 <= y11_d4 * wt11; pwt12 <= y12_d4 * wt12; pwt13 <= y13_d4 * wt13;
         pwt21 <= y21_d4 * wt21; pwt22 <= y22_d4 * wt22; pwt23 <= y23_d4 * wt23;
@@ -127,12 +156,14 @@ module bilateral_core (
     end
 
     // Stage 5 & 6 (T=6 & T=7):求和与最终像素值归一化
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     reg [25:0] p_sum_l1_1, p_sum_l1_2, p_sum_l1_3;
     reg [18:0] w_sum_l2;
     
     reg [27:0] p_sum_final; 
     reg [19:0] w_sum_final; 
 
+    // [Ethereal注释] 时序过程 7：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
     always @(posedge i_clk) begin
         // T=6
         p_sum_l1_1 <= pwt11 + pwt12 + pwt13;
@@ -146,24 +177,30 @@ module bilateral_core (
     end
 
     // Stage 7 (T=8 & T=9): 倒数 ROM 查表
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     wire [11:0] rec_addr = (w_sum_final+128)>>8;
     wire [17:0] inv_w_w; 
     reg [17:0] inv_w;
     // T=7 送入地址，T=8 线出结果
+    // [Ethereal注释] 子模块例化 9（rom_reciprocal）：封装只读存储器 IP，提供算法查找表或定点运算常量。
     rom_reciprocal u_reciprocal (.address(rec_addr), .clock(i_clk), .q(inv_w_w));
 
     // 手动打 1 拍
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     reg [27:0] p_sum_final_d1, p_sum_final_d2;
 
+    // [Ethereal注释] 时序过程 8：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
     always @(posedge i_clk) begin     // T=9: 获取对齐后的倒数
         inv_w <= inv_w_w;
         p_sum_final_d1 <= p_sum_final;    // T=8: 像素和打拍等 ROM
         p_sum_final_d2 <= p_sum_final_d1; // T=9: 像素和再次打拍对齐 inv_w
     end
     // Stage 8 & 9 (T=10 & T=11): 归一化乘法与钳位
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     reg [45:0] norm_mult; 
     reg [7:0]  y_out;
 
+    // [Ethereal注释] 时序过程 9：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
     always @(posedge i_clk) begin
         norm_mult <= p_sum_final_d2 * inv_w; // T=10
         
@@ -179,6 +216,7 @@ module bilateral_core (
     end
 
     // Stage 10 (T=12): 输出打包与同步信号恢复
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     reg [23:0] o_data;
     reg ohs, ovs, ode;
 
@@ -186,6 +224,7 @@ module bilateral_core (
     wire [7:0] original_y = packet_delay[10][7:0]; 
     wire [7:0] diff_y = (original_y > y_out) ? (original_y - y_out) : (y_out - original_y);
 
+    // [Ethereal注释] 时序过程 10：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
     always @(posedge i_clk) begin
         if (i_rst) begin
             o_data <= 24'd0;
@@ -209,6 +248,7 @@ module bilateral_core (
         end
     end
 
+    // [Ethereal注释] 组合连线组 1：从 {o_hs, o_vs, o_data_en} 开始的连续赋值随右值立即更新，不增加寄存器延迟。
     assign {o_hs, o_vs, o_data_en} = {ohs, ovs, ode};
     assign o_ycbcr_filtered = o_data;
 

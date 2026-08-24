@@ -5,6 +5,8 @@
 FPGA 中执行。协议参数和模式编码必须与对应 FPGA 工程保持一致。
 """
 
+__author__ = "Ethereal"
+
 import sys
 import os
 import time

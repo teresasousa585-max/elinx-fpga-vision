@@ -1,5 +1,6 @@
 // =============================================================================
 // 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 作者：Ethereal
 // 工程分区：基础图像处理工程（base）
 // 文件名称：cdc_handshake.v
 // 主要模块：cdc_handshake
@@ -14,9 +15,17 @@
 `timescale 1ns / 1ps
 
 // 多比特安全跨时钟域：基于四相握手协议 (Req & Ack)
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 正文导读：采用请求/应答握手在异步时钟域间可靠传递多位模式控制数据。
+// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// [Ethereal注释] 修改约束：协议字段、有效脉冲和跨时钟控制必须成组更新，并与上位机及外设时序保持一致。
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 模块 cdc_handshake：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module cdc_handshake #(
+    // [Ethereal注释] 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
     parameter DATA_WIDTH = 12
 ) (
+    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input wire rst,
 
     // 发送端 (系统时钟域 100MHz)
@@ -32,17 +41,20 @@ module cdc_handshake #(
 );
 
   // TX Domain (发送端状态机与信号)
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg tx_req;
   reg [DATA_WIDTH-1:0] tx_data_reg;
 
   // 接收端 Ack 信号在 TX 域的同步打拍
   reg rx_ack_meta, rx_ack_sync;
+  // [Ethereal注释] 时序过程 1：由 tx_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge tx_clk) begin
     rx_ack_meta <= rx_ack;
     rx_ack_sync <= rx_ack_meta;
   end
 
   // TX 状态机：发起 Req，等待 Ack，撤销 Req，等待 Ack 撤销
+  // [Ethereal注释] 时序过程 2：由 tx_clk posedge，rst posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge tx_clk or posedge rst) begin
     if (rst) begin
       tx_req      <= 1'b0;
@@ -66,16 +78,20 @@ module cdc_handshake #(
 
   // RX Domain (接收端逻辑)
   // 发送端 Req 信号在 RX 域的同步打拍
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg tx_req_meta, tx_req_sync;
   reg tx_req_sync_d1;
+  // [Ethereal注释] 时序过程 3：由 rx_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge rx_clk) begin
     tx_req_meta    <= tx_req;
     tx_req_sync    <= tx_req_meta;
     tx_req_sync_d1 <= tx_req_sync;
   end
 
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg rx_ack;
 
+  // [Ethereal注释] 时序过程 4：由 rx_clk posedge，rst posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge rx_clk or posedge rst) begin
     if (rst) begin
       rx_ack      <= 1'b0;

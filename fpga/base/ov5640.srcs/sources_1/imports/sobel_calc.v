@@ -1,5 +1,6 @@
 // =============================================================================
 // 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 作者：Ethereal
 // 工程分区：基础图像处理工程（base）
 // 文件名称：sobel_calc.v
 // 主要模块：sobel_calc
@@ -13,7 +14,14 @@
 // =============================================================================
 `timescale 1ns / 1ps
 
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 正文导读：计算 Sobel 水平与垂直梯度，依据阈值生成二值边缘图。
+// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// [Ethereal注释] 修改约束：像素数据、有效信号和 HS/VS 必须保持同拍；跨时钟数据必须使用 FIFO 或握手。
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 模块 sobel_calc：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module sobel_calc (
+    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input wire clk,
     input wire rst,
 
@@ -26,14 +34,17 @@ module sobel_calc (
     input wire [7:0] p11,
     p12,
     p13,
+    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input wire [7:0] p21,
     p22,
     p23,
+    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input wire [7:0] p31,
     p32,
     p33,
 
     // 串口动态调节的阈值
+    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input wire [7:0] i_threshold,
 
     // 输出同步信号与二值化数据
@@ -44,12 +55,14 @@ module sobel_calc (
 );
 
   // 同步信号流水线，深度 3 (匹配数据处理延迟)
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [2:0] hs_pipe, vs_pipe, de_pipe;
 
   // --- 第一级流水线：并行计算水平与垂直梯度 ---
   // 范围：8位加减后最大 10位有符号数
   reg signed [10:0] gx, gy;
 
+  // [Ethereal注释] 时序过程 1：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     if (rst) begin
       gx <= 11'd0;
@@ -102,9 +115,11 @@ module sobel_calc (
 
   // --- 第二级流水线：计算绝对值并累加 (或计算平方和) ---
   // 为了极致性能，这里使用 |gx| + |gy| 替代平方根，效果对边缘检测已足够
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [10:0] gx_abs, gy_abs;
   reg [11:0] g_sum;
 
+  // [Ethereal注释] 时序过程 2：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     if (rst) begin
       gx_abs <= 11'd0;
@@ -123,6 +138,7 @@ module sobel_calc (
   end
 
   // --- 第三级流水线：阈值比较与最终输出 ---
+  // [Ethereal注释] 时序过程 3：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     if (rst) begin
       o_rgb_binary <= 24'd0;

@@ -1,5 +1,6 @@
 // =============================================================================
 // 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 作者：Ethereal
 // 工程分区：基础图像处理工程（base）
 // 文件名称：rgb2ycbcr.v
 // 主要模块：rgb2ycbcr
@@ -13,7 +14,14 @@
 // =============================================================================
 `timescale 1ns / 1ps
 
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 正文导读：以流水线方式完成 RGB 到 YCbCr 的定点转换，同时延迟原始 RGB 旁路以保持时序一致。
+// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// [Ethereal注释] 修改约束：像素数据、有效信号和 HS/VS 必须保持同拍；跨时钟数据必须使用 FIFO 或握手。
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 模块 rgb2ycbcr：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module rgb2ycbcr (
+    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input wire clk,
     input wire rst,  // 高电平同步复位
 
@@ -32,6 +40,7 @@ module rgb2ycbcr (
 );
 
   // 拆分输入的 RGB
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   wire [7:0] r8 = i_rgb[23:16];
   wire [7:0] g8 = i_rgb[15:8];
   wire [7:0] b8 = i_rgb[7:0];
@@ -45,6 +54,7 @@ module rgb2ycbcr (
   reg hs_d1, vs_d1, de_d1;
   reg [23:0] raw_rgb_d1;
 
+  // [Ethereal注释] 时序过程 1：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     if (rst) begin
       {hs_d1, vs_d1, de_d1, raw_rgb_d1} <= 0;
@@ -80,12 +90,14 @@ module rgb2ycbcr (
   end
 
   //  第 2 级流水线：加减法运算 (防止溢出，提前加上偏移量 32768)
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [15:0] add_y, add_cb, add_cr;
 
   // 同步信号打拍 (延迟 2)
   reg hs_d2, vs_d2, de_d2;
   reg [23:0] raw_rgb_d2;
 
+  // [Ethereal注释] 时序过程 2：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     if (rst) begin
       {hs_d2, vs_d2, de_d2, raw_rgb_d2} <= 0;
@@ -107,6 +119,7 @@ module rgb2ycbcr (
 
   //  第 3 级流水线：移位、限幅与同步输出
 
+  // [Ethereal注释] 时序过程 3：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     if (rst) begin
       {o_hs, o_vs, o_de, o_raw_rgb, o_ycbcr} <= 0;

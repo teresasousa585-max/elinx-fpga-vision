@@ -1,5 +1,6 @@
 // =============================================================================
 // 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 作者：Ethereal
 // 工程分区：图像增强工程（enhancement）
 // 文件名称：YCbCr_to_RGB.v
 // 主要模块：YCbCr_to_RGB
@@ -12,7 +13,14 @@
 // 维护要求：修改端口、位宽、流水线延迟或模式编码时，必须同步更新上层例化与项目文档。
 // =============================================================================
 `timescale 1 ns/ 1 ps
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 正文导读：将处理后的 YCbCr 像素恢复为 RGB888，并对齐原始旁路数据与视频同步信号。
+// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// [Ethereal注释] 修改约束：像素数据、有效信号和 HS/VS 必须保持同拍；跨时钟数据必须使用 FIFO 或握手。
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 模块 YCbCr_to_RGB：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module YCbCr_to_RGB (
+    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input  wire        i_clk,
     input  wire        i_rst,
     input  wire        i_hs,
@@ -27,10 +35,12 @@ module YCbCr_to_RGB (
     output wire [23:0] o_original_rgb  // 准确对齐的原始 RGB 旁路输出
 );
 
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     reg [7:0]  y_in, cb_in, cr_in;
     reg        hs1, vs1, de1;
     reg [23:0] rgb1;
 
+    // [Ethereal注释] 时序过程 1：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
     always @(posedge i_clk) begin
         if (i_rst) begin
             {y_in, cb_in, cr_in} <= 0;
@@ -47,10 +57,12 @@ module YCbCr_to_RGB (
         end
     end
 
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     reg signed [9:0] y_s, cb_s, cr_s;
     reg        hs2, vs2, de2;
     reg [23:0] rgb2;
 
+    // [Ethereal注释] 时序过程 2：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
     always @(posedge i_clk) begin
         if (i_rst) begin
             {y_s, cb_s, cr_s} <= 0;
@@ -67,20 +79,27 @@ module YCbCr_to_RGB (
         end
     end
 
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     wire signed [19:0] mult_r_cr, mult_g_cb, mult_g_cr, mult_b_cb;
 
     //LPM_MULT 设置为 2 Clock Latency
+    // [Ethereal注释] 子模块例化 1（lpmmult_10x10_signed）：封装定点乘法器 IP，完成算法流水线中的乘法运算。
     lpmmult_10x10_signed u_mult_r_cr (.clock(i_clk), .dataa(cr_s), .datab(10'sd351), .result(mult_r_cr));
+    // [Ethereal注释] 子模块例化 2（lpmmult_10x10_signed）：封装定点乘法器 IP，完成算法流水线中的乘法运算。
     lpmmult_10x10_signed u_mult_g_cb (.clock(i_clk), .dataa(cb_s), .datab(10'sd86),  .result(mult_g_cb));
+    // [Ethereal注释] 子模块例化 3（lpmmult_10x10_signed）：封装定点乘法器 IP，完成算法流水线中的乘法运算。
     lpmmult_10x10_signed u_mult_g_cr (.clock(i_clk), .dataa(cr_s), .datab(10'sd179), .result(mult_g_cr));
+    // [Ethereal注释] 子模块例化 4（lpmmult_10x10_signed）：封装定点乘法器 IP，完成算法流水线中的乘法运算。
     lpmmult_10x10_signed u_mult_b_cb (.clock(i_clk), .dataa(cb_s), .datab(10'sd443), .result(mult_b_cb));
 
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     reg signed [19:0] y_shifted;
     reg signed [19:0] y_shifted_r;
     reg hs3_r, vs3_r, de3_r;
     reg        hs3, vs3, de3;
     reg [23:0] rgb3;
     reg [23:0] rgb3_r;
+    // [Ethereal注释] 时序过程 3：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
     always @(posedge i_clk) begin
         y_shifted_r<= y_s * 20'sd256;
         y_shifted <= y_shifted_r;
@@ -90,10 +109,12 @@ module YCbCr_to_RGB (
         rgb3 <= rgb3_r;
     end
 
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     reg signed [19:0] sum_r, sum_g, sum_b;
     reg        hs4, vs4, de4;
     reg [23:0] rgb4;
 
+    // [Ethereal注释] 时序过程 4：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
     always @(posedge i_clk) begin
         sum_r <= y_shifted + mult_r_cr;
         sum_g <= y_shifted - mult_g_cb - mult_g_cr;
@@ -102,10 +123,12 @@ module YCbCr_to_RGB (
         rgb4 <= rgb3;
     end
 
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     reg signed [19:0] sum_r_r, sum_g_r, sum_b_r;
     reg        hs5, vs5, de5;
     reg [23:0] rgb5;
 
+    // [Ethereal注释] 时序过程 5：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
     always @(posedge i_clk) begin
         sum_r_r <= sum_r;
         sum_g_r <= sum_g;
@@ -114,10 +137,12 @@ module YCbCr_to_RGB (
         rgb5 <= rgb4;
     end
 
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     reg [23:0] orgb;
     reg [23:0] orig_rgb_out;
     reg ohs, ovs, ode;
 
+    // [Ethereal注释] 时序过程 6：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
     always @(posedge i_clk) begin
         if (i_rst) begin
             orgb <= 0; orig_rgb_out <= 0; {ohs, ovs, ode} <= 0;
@@ -147,6 +172,7 @@ module YCbCr_to_RGB (
         end
     end
 
+    // [Ethereal注释] 组合连线组 1：从 o_rgb 开始的连续赋值随右值立即更新，不增加寄存器延迟。
     assign o_rgb          = orgb;
     assign o_original_rgb = orig_rgb_out;
     assign o_hs           = ohs;

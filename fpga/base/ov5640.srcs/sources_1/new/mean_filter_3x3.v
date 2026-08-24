@@ -1,5 +1,6 @@
 // =============================================================================
 // 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 作者：Ethereal
 // 工程分区：基础图像处理工程（base）
 // 文件名称：mean_filter_3x3.v
 // 主要模块：mean_filter_3x3
@@ -13,7 +14,14 @@
 // =============================================================================
 `timescale 1ns / 1ps
 
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 正文导读：对 RGB 3×3 邻域执行均值滤波，用于图像放大后的平滑和锯齿抑制。
+// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// [Ethereal注释] 修改约束：像素数据、有效信号和 HS/VS 必须保持同拍；跨时钟数据必须使用 FIFO 或握手。
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 模块 mean_filter_3x3：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module mean_filter_3x3 (
+    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input wire i_clk,
     input wire i_rst,
     input wire i_hs,
@@ -27,10 +35,12 @@ module mean_filter_3x3 (
     output reg [23:0] o_rgb
 );
 
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   wire [23:0] p11, p12, p13, p21, p22, p23, p31, p32, p33;
   wire m_hs, m_vs, m_de;
 
   // 复用 3x3 缓存模块 ( m_hs 已经和 p22 中心对齐)
+  // [Ethereal注释] 子模块例化 1（bilateral_filtering_Line_buffer）：使用行存储构造连续 3×3 像素窗口，并将窗口数据与 HS/VS/DE 信号对齐。
   bilateral_filtering_Line_buffer #(
       .H_TOTAL(11'd1344)
   ) u_buf (
@@ -55,9 +65,11 @@ module mean_filter_3x3 (
   );
 
   // Pipeline Stage 1: 加法树求和
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [11:0] sum_r, sum_g, sum_b;
   reg hs_d1, vs_d1, de_d1;
 
+  // [Ethereal注释] 时序过程 1：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge i_clk) begin
     sum_r <= (p11[23:16] + p12[23:16] + p13[23:16]) + 
                  (p21[23:16] + p22[23:16] + p23[23:16]) + 
@@ -78,9 +90,11 @@ module mean_filter_3x3 (
 
 
   // Pipeline Stage 2: 乘法器运算
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [19:0] mult_r, mult_g, mult_b;
   reg hs_d2, vs_d2, de_d2;
 
+  // [Ethereal注释] 时序过程 2：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge i_clk) begin
     // 强制 20 位运算
     mult_r <= sum_r * 20'd114;
@@ -94,6 +108,7 @@ module mean_filter_3x3 (
 
 
   // Pipeline Stage 3: 移位截取与最终输出
+  // [Ethereal注释] 时序过程 3：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge i_clk) begin
     if (de_d2) begin
       // 截取高 8 位相当于 >> 10

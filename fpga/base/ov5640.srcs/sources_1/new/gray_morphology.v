@@ -1,5 +1,6 @@
 // =============================================================================
 // 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 作者：Ethereal
 // 工程分区：基础图像处理工程（base）
 // 文件名称：gray_morphology.v
 // 主要模块：gray_morphology
@@ -13,9 +14,17 @@
 // =============================================================================
 `timescale 1ns / 1ps
 
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 正文导读：在灰度 3×3 邻域上按子模式执行腐蚀或膨胀，用于目标区域去噪与结构增强。
+// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// [Ethereal注释] 修改约束：像素数据、有效信号和 HS/VS 必须保持同拍；跨时钟数据必须使用 FIFO 或握手。
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 模块 gray_morphology：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module gray_morphology #(
+    // [Ethereal注释] 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
     parameter H_DISP = 1024
 ) (
+    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input wire clk,
     input wire rst,
 
@@ -44,6 +53,7 @@ module gray_morphology #(
   (* ramstyle = "block" *) reg [7:0] line2[0:2047];
   (* ramstyle = "block" *) reg [7:0] line3[0:2047];
 
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [11:0] wr_ptr;
 
   reg [7:0] row0_data;
@@ -54,6 +64,7 @@ module gray_morphology #(
 
   reg hs_d1, vs_d1, de_d1;
 
+  // [Ethereal注释] 时序过程 1：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     if (rst) begin
       wr_ptr <= 0;
@@ -94,6 +105,7 @@ module gray_morphology #(
   // ---------------------------------------------------------
   // 2. 5x5 Window Registers (Shift Registers)
   // ---------------------------------------------------------
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [7:0] p11, p12, p13, p14, p15;
   reg [7:0] p21, p22, p23, p24, p25;
   reg [7:0] p31, p32, p33, p34, p35;
@@ -102,6 +114,7 @@ module gray_morphology #(
 
   reg hs_d2, vs_d2, de_d2;
 
+  // [Ethereal注释] 时序过程 2：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     if (rst) begin
       {p11, p12, p13, p14, p15} <= 0;
@@ -151,12 +164,16 @@ module gray_morphology #(
   // ---------------------------------------------------------
   // 3. Compare Pipeline Stage 1: Find Max/Min in rows
   // ---------------------------------------------------------
+  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [7:0] max_row1, max_row2, max_row3, max_row4, max_row5;
   reg [7:0] min_row1, min_row2, min_row3, min_row4, min_row5;
   reg hs_d3, vs_d3, de_d3;
 
+  // [Ethereal注释] 辅助函数 max5：比较 5 个灰度样本并返回最大值，供膨胀运算的邻域归约使用。
   function [7:0] max5;
+    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input [7:0] a, b, c, d, e;
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     reg [7:0] t1, t2, t3;
     begin
       t1   = (a > b) ? a : b;
@@ -166,8 +183,11 @@ module gray_morphology #(
     end
   endfunction
 
+  // [Ethereal注释] 辅助函数 min5：比较 5 个灰度样本并返回最小值，供腐蚀运算的邻域归约使用。
   function [7:0] min5;
+    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input [7:0] a, b, c, d, e;
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     reg [7:0] t1, t2, t3;
     begin
       t1   = (a < b) ? a : b;
@@ -177,6 +197,7 @@ module gray_morphology #(
     end
   endfunction
 
+  // [Ethereal注释] 时序过程 3：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     if (rst) begin
       {max_row1, max_row2, max_row3, max_row4, max_row5} <= 0;
@@ -208,6 +229,7 @@ module gray_morphology #(
   // ---------------------------------------------------------
   // 4. Compare Pipeline Stage 2: Final Result Selection
   // ---------------------------------------------------------
+  // [Ethereal注释] 时序过程 4：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     if (rst) begin
       hs_out   <= 0;

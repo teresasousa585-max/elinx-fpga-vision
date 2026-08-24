@@ -1,5 +1,6 @@
 // =============================================================================
 // 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 作者：Ethereal
 // 工程分区：图像增强工程（enhancement）
 // 文件名称：meiyan_rebuild.v
 // 主要模块：meiyan_rebuild
@@ -14,11 +15,19 @@
 `timescale 1 ns/ 1 ps
 // Line Buffer 驱动 2D形态学 + 双边滤波 + S曲线高端美白 (全IP优化版)
 
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 正文导读：融合原始像素与双边平滑结果，抑制皮肤纹理噪声并保留主要边缘。
+// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// [Ethereal注释] 修改约束：像素数据、有效信号和 HS/VS 必须保持同拍；跨时钟数据必须使用 FIFO 或握手。
+// -----------------------------------------------------------------------------
+// [Ethereal注释] 模块 meiyan_rebuild：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module meiyan_rebuild#(
+    // [Ethereal注释] 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
     parameter cb_l=8'd75, cb_h=8'd135, cr_l=8'd130, cr_h=8'd177, y_l=8'd10,
     parameter H_TOTAL = 11'd1344,
     parameter MEIBAI = 5
 )(
+    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input  wire        i_clk,
     input  wire        i_rst,
     input  wire [11:0] i_mean_a,
@@ -34,10 +43,12 @@ module meiyan_rebuild#(
     output wire        o_de_out
 );
     // T1: 引导滤波重建与肤色提取
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     reg [11:0] in_mean_a_r; 
     reg [11:0] in_mean_b_r; 
     reg [23:0] in_ycbcr_r;
     reg        in_hs_r, in_vs_r, in_de_r;
+    // [Ethereal注释] 时序过程 1：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
     always @(posedge i_clk) begin
         in_mean_a_r <= i_mean_a; 
         in_mean_b_r <= i_mean_b; 
@@ -47,6 +58,7 @@ module meiyan_rebuild#(
         in_de_r <= i_de;
     end
 
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     wire [7:0] y_raw = in_ycbcr_r[23:16];
     
     // T2
@@ -55,6 +67,7 @@ module meiyan_rebuild#(
     reg [23:0] ycbcr_d1;
     reg hs_d1, vs_d1, de_d1, is_skin_d1;
     
+    // [Ethereal注释] 子模块例化 1（lpmmult_12_8）：封装定点乘法器 IP，完成算法流水线中的乘法运算。
     lpmmult_12_8 u_mult_a_y(
         .clock(i_clk),                 //input clock
         .dataa(in_mean_a_r),           //input [11:0] dataa
@@ -62,6 +75,7 @@ module meiyan_rebuild#(
         .result(mult_a_y)              //output [19:0] result
     );
     
+    // [Ethereal注释] 时序过程 2：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
     always @(posedge i_clk) begin
         mean_b_plus_8 <= in_mean_b_r + 13'd8;
         if (in_ycbcr_r[15:8] >= cb_l && in_ycbcr_r[15:8] <= cb_h &&
@@ -78,10 +92,12 @@ module meiyan_rebuild#(
     end
     
     // T3
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     reg [12:0] add_q;
     reg [23:0] ycbcr_d2;
     reg hs_d2, vs_d2, de_d2, is_skin_d2;
     
+    // [Ethereal注释] 时序过程 3：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
     always @(posedge i_clk) begin
         add_q <= mult_a_y[19:8] + mean_b_plus_8;
         ycbcr_d2 <= ycbcr_d1;
@@ -92,10 +108,12 @@ module meiyan_rebuild#(
     end
 
     // T4
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     reg [7:0] y_guided;
     reg [23:0] ycbcr_d3; 
     reg hs_d3, vs_d3, de_d3, is_skin_d3;
     
+    // [Ethereal注释] 时序过程 4：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
     always @(posedge i_clk) begin
         if(add_q[12:4] > 9'd255) 
             y_guided <= 8'd255; 
@@ -110,6 +128,7 @@ module meiyan_rebuild#(
     end
 
     // 产生 3x3 压缩矩阵与 3行皮肤检测标志
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     wire [23:0] packed_rgb = {ycbcr_d3[23:16], ycbcr_d3[15:10], ycbcr_d3[7:2], y_guided[7:4]};
     wire [4:0]  packed_usr = {y_guided[3:0], is_skin_d3};
 
@@ -120,6 +139,7 @@ module meiyan_rebuild#(
     wire lb_hs, lb_vs, lb_de;
 
     // 实例化 Line Buffer
+    // [Ethereal注释] 子模块例化 2（bilateral_filtering_Line_buffer_1）：为增强工程的双边滤波支路构造第二组对齐的 3×3 邻域窗口。
     bilateral_filtering_Line_buffer_1 #(.H_TOTAL(H_TOTAL)) 
     u_shared_lb (
         .i_clk(i_clk),
@@ -141,13 +161,16 @@ module meiyan_rebuild#(
     );
 
     // 2D 形态学开运算
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     reg [14:0] sr_r1, sr_r2, sr_r3;
+    // [Ethereal注释] 时序过程 5：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
     always @(posedge i_clk) begin
         sr_r1 <= {sr_r1[13:0], u_r1[0]};
         sr_r2 <= {sr_r2[13:0], u_r2[0]};
         sr_r3 <= {sr_r3[13:0], u_r3[0]};
     end
 
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     wire [14:0] col_and = sr_r1 & sr_r2 & sr_r3;
     wire e1 = col_and[1] & col_and[2] & col_and[3] & col_and[4] & col_and[5];
     wire e3 = col_and[3] & col_and[4] & col_and[5] & col_and[6] & col_and[7];
@@ -168,9 +191,11 @@ module meiyan_rebuild#(
         lb_hs, lb_vs, lb_de      // 3 bits
     };                           // 总计 256 bits
 
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     wire [255:0] packed_delay_out;
 
     // 2. 实例化 256 位 RAM 移位寄存器 IP (延迟设为 8 拍)
+    // [Ethereal注释] 子模块例化 3（shift_delay_256w_8d）：封装移位寄存器 IP，为像素、系数或同步信号提供固定拍数延迟。
     shift_delay_256w_8d u_8_cycles_delay (
         .clock    (i_clk),            // input clock
         .shiftin  (packed_delay_in),  // input [255:0] shiftin
@@ -179,6 +204,7 @@ module meiyan_rebuild#(
     );
 
     // 3. 数据解包 (直接提取低 224 位有效数据)
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     wire [23:0] p11_d8, p12_d8, p13_d8;
     wire [23:0] p21_d8, p22_d8, p23_d8;
     wire [23:0] p31_d8, p32_d8, p33_d8;
@@ -193,6 +219,7 @@ module meiyan_rebuild#(
         hs_d8, vs_d8, de_d8
     } = packed_delay_out[223:0]; 
 
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     wire [7:0] raw_y_22  = p22_d8[23:16];
     wire [7:0] raw_cb_22 = {p22_d8[15:10], 2'b10}; 
     wire [7:0] raw_cr_22 = {p22_d8[9:4], 2'b10};
@@ -203,6 +230,7 @@ module meiyan_rebuild#(
 
     // S 曲线 ROM 查表美白 
     wire [7:0] curve_y_out;
+    // [Ethereal注释] 子模块例化 4（meiyan_rom_scurve）：封装只读存储器 IP，提供算法查找表或定点运算常量。
     meiyan_rom_scurve u_whitening_curve (
         .address (y_guide_22), 
         .clock   (i_clk),
@@ -210,6 +238,7 @@ module meiyan_rebuild#(
     );
 
     // T8: 流水线打拍 
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     reg [8:0] calc_cb_r;
     reg       skin_r;
     reg [7:0] raw_y_22_r, raw_cb_22_r, raw_cr_22_r;
@@ -219,6 +248,7 @@ module meiyan_rebuild#(
     reg [23:0] pre_p31, pre_p32, pre_p33;
     reg pre_hs, pre_vs, pre_de;
 
+    // [Ethereal注释] 时序过程 6：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
     always @(posedge i_clk) begin
         calc_cb_r <= calc_cb_w;
         skin_r    <= skin_dilated_2d;
@@ -245,11 +275,13 @@ module meiyan_rebuild#(
     end
 
     // T9: 拼装，送入双边滤波
+    // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
     reg [23:0] bf_p11, bf_p12, bf_p13;
     reg [23:0] bf_p21, bf_p22, bf_p23;
     reg [23:0] bf_p31, bf_p32, bf_p33;
     reg bf_hs, bf_vs, bf_de;
 
+    // [Ethereal注释] 时序过程 7：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
     always @(posedge i_clk) begin
         bf_p11 <= pre_p11; bf_p12 <= pre_p12; bf_p13 <= pre_p13;
         bf_p21 <= pre_p21;                    bf_p23 <= pre_p23;
@@ -266,6 +298,7 @@ module meiyan_rebuild#(
     end
 
     // 双边滤波 Core
+    // [Ethereal注释] 子模块例化 5（meiyan_bilateral_core）：对肤色/亮度数据执行保边双边平滑，为磨皮融合提供去噪结果。
     meiyan_bilateral_core u_bilateral_core_final (
         .i_clk(i_clk), .i_rst(i_rst), 
         .i_hs(bf_hs), .i_vs(bf_vs), .i_data_en(bf_de),
