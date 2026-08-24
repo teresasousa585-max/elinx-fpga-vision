@@ -3,7 +3,11 @@
 *.v text eol=lf
 *.qsf text eol=lf
 *.qpf text eol=lf
+*.epr text eol=lf
+*.eci text eol=lf
+*.eeo text eol=lf
+*.edc text eol=lf
 *.md text eol=lf
 *.mif text eol=lf
+*.txt text eol=lf
 *.vqm binary
-

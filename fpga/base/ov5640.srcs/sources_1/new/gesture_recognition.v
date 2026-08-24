@@ -1,10 +1,16 @@
 // =============================================================================
+// 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 工程分区：基础图像处理工程（base）
 // 文件名称：gesture_recognition.v
 // 主要模块：gesture_recognition
-// 功能说明：基于颜色与形态特征提取手势区域。
-// 维护说明：修改接口或时序时，请同步更新本文件注释和上层例化。
+// 功能分类：目标识别算法
+// 功能说明：对颜色阈值结果进行邻域处理和区域判断，输出手势候选区域及同步视频流。
+// 输入概述：像素数据及 HS/VS/DE 视频同步信号；控制参数由模式或模块参数给出。
+// 输出概述：处理后的像素流，以及与流水线延迟严格匹配的 HS/VS/DE 信号。
+// 时序约束：像素数据在视频像素时钟上升沿处理；复位极性以模块端口定义为准。
+// 关联文件：rgb2hsv.v、gray_morphology.v
+// 维护要求：修改端口、位宽、流水线延迟或模式编码时，必须同步更新上层例化与项目文档。
 // =============================================================================
-
 `timescale 1ns / 1ps
 
 module gesture_recognition #(
@@ -27,9 +33,9 @@ module gesture_recognition #(
     output reg [11:0] o_center_x,
     output reg [11:0] o_center_y,
 
-    output wire o_final_vs,  // 与最终数据完美对齐的场同步
-    output wire o_final_hs,  // 与最终数据完美对齐的行同步
-    output wire o_final_de,  // 与最终数据完美对齐的数据有效信号
+    output wire o_final_vs,  // 与最终数据准确对齐的场同步
+    output wire o_final_hs,  // 与最终数据准确对齐的行同步
+    output wire o_final_de,  // 与最终数据准确对齐的数据有效信号
 
     output wire o_roi_bw_de,
     output wire o_roi_bw_data

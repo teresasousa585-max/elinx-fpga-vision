@@ -1,13 +1,19 @@
 // =============================================================================
+// 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 工程分区：图像增强工程（enhancement）
 // 文件名称：anguang_tohdmi.v
 // 主要模块：anguang_tohdmi
-// 功能说明：对齐暗光增强结果与 HDMI 视频时序。
-// 维护说明：修改接口或时序时，请同步更新本文件注释和上层例化。
+// 功能分类：暗光增强算法
+// 功能说明：组织暗光照度估计、增强应用和视频时序对齐，输出 RGB888 增强画面。
+// 输入概述：像素数据及 HS/VS/DE 视频同步信号；控制参数由模式或模块参数给出。
+// 输出概述：处理后的像素流，以及与流水线延迟严格匹配的 HS/VS/DE 信号。
+// 时序约束：像素数据在视频像素时钟上升沿处理；复位极性以模块端口定义为准。
+// 关联文件：anguang_guided.v、anguang_enhance_apply.v
+// 维护要求：修改端口、位宽、流水线延迟或模式编码时，必须同步更新上层例化与项目文档。
 // =============================================================================
-
 `timescale 1 ns/ 1 ps
 module anguang_tohdmi#(
-parameter H_TOTAL = 11'd1344,// ʵ���п�����     
+parameter H_TOTAL = 11'd1344, // 每行总时钟数（含消隐区）
 parameter EPSILON=16'd1000
 
 )(
@@ -19,12 +25,12 @@ input wire i_vs,
 input wire i_de,
 input wire [23:0] i_rgb_data,
 
-// ����ź�ֱ�����ӵ� HDMI ����˿�
+// 输出信号直接连接到 HDMI 输出端口
 output wire o_hs,
 output wire o_vs,
 output wire o_de,
 output wire [23:0] o_rgb_data,
-output wire [23:0] o_original_rgb_data// ԭʼ����
+output wire [23:0] o_original_rgb_data// 原始数据
 );
 
 wire [23:0] ycbcr_data;
@@ -66,12 +72,12 @@ anguang_guided #(
     .i_hs(m1_hs),
     .i_vs(m1_vs),
     .i_de(m1_de),
-    .i_rgb(original_rgb_data),//�����˲��������
+    .i_rgb(original_rgb_data),//输入滤波后的数据
     .o_hs_out(m2_hs),
     .o_vs_out(m2_vs),
     .o_de_out(m2_de),
     .o_y(guided_y),
-    .o_rgb(original_rgb_data_d1)//����˲�������ݿ����������Ա�
+    .o_rgb(original_rgb_data_d1)//输出滤波后的数据可以用来做对比
 );
 wire [23:0] original_rgb_data_d2;
 wire [23:0] enhanced_rgb_data;
@@ -116,5 +122,5 @@ assign o_hs = m3_hs;
 assign o_vs = m3_vs;
 assign o_de = m3_de;
 assign o_original_rgb_data = original_rgb_data_d2;
-//assign o_rgb_data = o_de?filtered_rgb:24'h000000; // ֱ������˲���������������ݣ����� HDMI ����˿�;
+//assign o_rgb_data = o_de?filtered_rgb:24'h000000; // 直接输出滤波后的中心像素数据，送往 HDMI 输出端口;
 endmodule

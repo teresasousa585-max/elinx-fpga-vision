@@ -1,10 +1,16 @@
 // =============================================================================
+// 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 工程分区：图像增强工程（enhancement）
 // 文件名称：guided_to_hdmi.v
 // 主要模块：guided_to_hdmi
-// 功能说明：对齐引导滤波结果与 HDMI 视频时序。
-// 维护说明：修改接口或时序时，请同步更新本文件注释和上层例化。
+// 功能分类：引导滤波/磨皮算法
+// 功能说明：集成灰度引导、局部统计、系数滤波和图像重建；子模式选择通用引导滤波或磨皮处理。
+// 输入概述：像素数据及 HS/VS/DE 视频同步信号；控制参数由模式或模块参数给出。
+// 输出概述：处理后的像素流，以及与流水线延迟严格匹配的 HS/VS/DE 信号。
+// 时序约束：像素数据在视频像素时钟上升沿处理；复位极性以模块端口定义为准。
+// 关联文件：guided_line_buffer.v、guided_var_a_b.v、box_filter_ab.v、guided_final_rebuild.v
+// 维护要求：修改端口、位宽、流水线延迟或模式编码时，必须同步更新上层例化与项目文档。
 // =============================================================================
-
 `timescale 1 ns/ 1 ps
 module guided_to_hdmi#(
 parameter H_TOTAL = 11'd1344,// 实际行宽配置     
@@ -119,7 +125,7 @@ guided_var_a_b #(
     .i_hs(m2_hs), // 注意这里用 m2_hs，保持与数据流同步
     .i_vs(m2_vs), // 注意这里用 m2_vs，保持与数据
     .i_de(m2_de),
-    .o_a_val(a_val), // 这里 a 和 b 的值暂时不输出了，后续如果需要可以再添加输出端口
+    .o_a_val(a_val), // 输出局部线性系数 a；系数 b 由下一端口输出。
     .o_b_val(b_val),
     .o_ycbcr_out(ycbcr_sync1), 
     .o_rgb(original_rgb_data_d3),
@@ -145,7 +151,7 @@ guided_line_buffer_a_b #(
     .i_b(b_val),
     .o_col_sum_a(col_sum_a),
     .o_col_sum_b(col_sum_b),
-    .o_center_ycbcr(ycbcr_sync2), // 直接输出对齐后的中心像素 YCbCr 数据
+    .o_center_ycbcr(ycbcr_sync2), // 输出与系数窗口中心对齐的 YCbCr 像素。
     .o_rgb(original_rgb_data_d4),
     .o_hs_center(m4_hs),
     .o_vs_center(m4_vs),
@@ -160,7 +166,7 @@ box_filter_ab u_box_filter_ab (
     .i_rst(i_rst),
     .i_col_sum_a(col_sum_a),
     .i_col_sum_b(col_sum_b),
-    .i_center_ycbcr(ycbcr_sync2), // 直接输入对齐后的中心像素 YCbCr 数据进行滤波
+    .i_center_ycbcr(ycbcr_sync2), // 输入与 a、b 系数窗口对齐的中心 YCbCr 像素。
     .i_rgb(original_rgb_data_d4),
     .i_hs(m4_hs), // 注意这里用 m4_hs，保持与数据流同步
     .i_vs(m4_vs), // 注意这里用 m4_vs，保持与数据流同步
@@ -248,7 +254,7 @@ YCbCr_to_RGB u_ycbcr_to_rgb (
     .i_hs(m8_hs),
     .i_vs(m8_vs),
     .i_data_en(m8_de),
-    .i_ycbcr(filtered_ycbcr_r), // 直接输入滤波后的 YCbCr 数据进行转换
+    .i_ycbcr(filtered_ycbcr_r), // 将选定支路的 YCbCr 结果转换回 RGB888。
     .i_rgb(filtered_rgb_r),
     .o_hs(m_hs),    
     .o_vs(m_vs),
@@ -272,6 +278,5 @@ endmodule
 
 
  
-
 
 

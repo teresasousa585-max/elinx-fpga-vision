@@ -1,10 +1,16 @@
 // =============================================================================
+// 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 工程分区：基础图像处理工程（base）
 // 文件名称：video_algo_manager.v
 // 主要模块：image_process_pipe
-// 功能说明：根据串口模式选择图像处理支路，并统一输出视频时序。
-// 维护说明：修改接口或时序时，请同步更新本文件注释和上层例化。
+// 功能分类：算法调度
+// 功能说明：实例化算法支路，根据主模式和子模式选择输出，并保证像素数据与 HS/VS/DE 同步。
+// 输入概述：像素数据及 HS/VS/DE 视频同步信号；控制参数由模式或模块参数给出。
+// 输出概述：处理后的像素流，以及与流水线延迟严格匹配的 HS/VS/DE 信号。
+// 时序约束：像素数据在视频像素时钟上升沿处理；复位极性以模块端口定义为准。
+// 关联文件：uart_cmd_parser.v、top.v、各算法顶层模块
+// 维护要求：修改端口、位宽、流水线延迟或模式编码时，必须同步更新上层例化与项目文档。
 // =============================================================================
-
 `timescale 1ns / 1ps
 
 module image_process_pipe (
@@ -15,7 +21,7 @@ module image_process_pipe (
     input wire [3:0] al_main_hdmi,
     input wire [7:0] al_sub_hdmi,
 
-    // 来自 hdmi.v 的基础完美图像与时序
+    // 来自 hdmi.v 的基准图像流与同步时序
     input wire        raw_hs,
     input wire        raw_vs,
     input wire        raw_de,
@@ -136,7 +142,7 @@ module image_process_pipe (
   );
 
 
-  // 辅助算法：抗马赛克平滑 (仅给放大模式用)
+  // 放大模式辅助支路：3×3 均值滤波用于抑制像素复制产生的锯齿与块效应。
   wire smooth_hs, smooth_vs, smooth_de;
   wire [23:0] smooth_rgb;
   mean_filter_3x3 u_smooth (
@@ -154,7 +160,7 @@ module image_process_pipe (
 
   // 算法 10：Sobel 边缘检测
   // =========================================================================
-  // 手动寄存器隔离区：防止 Sobel 庞大的逻辑树倒吸前端信号质量
+  // 输入寄存器隔离级：防止 Sobel 较长的组合路径影响前级时序收敛
   // =========================================================================
   reg sobel_in_hs, sobel_in_vs, sobel_in_de;
   reg [7:0] sobel_in_Y;
@@ -229,7 +235,7 @@ module image_process_pipe (
       .o_rgb_binary(sobel_rgb)
   );
 
-  // 终极管线路由 (MUX)：保证各模式下时序绝对安全对齐
+  // 输出通道路由 (MUX)：保证各模式下时序绝对安全对齐
   always @(posedge clk_hdmi) begin
     case (al_main_hdmi)
       4'd0: begin  // 原图直出
@@ -258,7 +264,7 @@ module image_process_pipe (
         final_hs  <= sync_ycbcr_hs;
         final_vs  <= sync_ycbcr_vs;
         final_de  <= sync_ycbcr_de;
-        // 缩放缩小、各种旋转 (图像在前端BRAM和SDRAM已处理，这里直接透传)
+        // 缩放缩小、旋转模式 (图像在前端BRAM和SDRAM已处理，这里直接透传)
         final_rgb <= sync_ycbcr_de ? sync_raw_rgb_ycbcr : 24'd0;
 
       end

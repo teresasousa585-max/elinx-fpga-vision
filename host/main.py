@@ -1,7 +1,8 @@
-"""FPGA 实时视觉处理系统上位机。
+"""2026 年集创赛国奖项目 FPGA 实时视觉处理系统上位机。
 
 通过串口向 FPGA 发送算法切换命令，并接收 UDP RGB565 视频流，提供
-实时预览、截图和录像功能。协议参数应与 FPGA 端保持一致。
+实时预览、截图和录像功能。电脑端只负责控制与显示，所有图像算法均在
+FPGA 中执行。协议参数和模式编码必须与对应 FPGA 工程保持一致。
 """
 
 import sys
@@ -32,8 +33,13 @@ from PyQt6.QtCore import (
 # ============================================================
 # 1. 协议与图像参数
 # ============================================================
+# 网络协议参数：FPGA 将 RGB565 分片发送到 UDP 8080；源端口 8191
+# 作为新帧起点标记，具体拼帧规则见 receive_network_stream()。
 UDP_IP = "0.0.0.0"
 UDP_PORT = 8080
+
+# 视频格式参数：每像素 16 位，因此单帧字节数为宽 × 高 × 2。
+# 修改分辨率或像素格式时，必须同步修改 FPGA 端 UDP 发送长度和显示时序。
 IMG_W = 1024
 IMG_H = 600
 FRAME_SIZE = IMG_W * IMG_H * 2
@@ -680,6 +686,11 @@ class VisionControllerWidget(QWidget):
         self._video_return_page = None
         self._video_return_page_prepared = False
 
+        # 算法配置项格式：
+        # (英文标识, 中文显示名, (主模式, 子模式) 或 None, 子菜单或 None)。
+        # 主模式 0~10 对应基础工程；增强工程复用主模式 10 实现引导滤波/
+        # 磨皮，并使用主模式 11 实现暗光增强。修改编码时须同步更新两套
+        # FPGA 工程的 uart_cmd_parser.v、video_algo_manager.v 和算法索引文档。
         self.algo_config = [
             ("RAW PASS", "🌌 原图直出", (0, 0), None),
             ("COLOR SPACE", "🎨 色域空间转换", None, {"RGB 转换 YCbCr": (1, 1), "RGB 转换 HSV": (2, 0)}),

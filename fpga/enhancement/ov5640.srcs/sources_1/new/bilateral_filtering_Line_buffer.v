@@ -1,10 +1,16 @@
 // =============================================================================
+// 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 工程分区：图像增强工程（enhancement）
 // 文件名称：bilateral_filtering_Line_buffer.v
 // 主要模块：bilateral_filtering_Line_buffer
-// 功能说明：缓存双边滤波所需的邻域像素行。
-// 维护说明：修改接口或时序时，请同步更新本文件注释和上层例化。
+// 功能分类：双边滤波算法
+// 功能说明：使用行存储构造连续 3×3 像素窗口，并将窗口数据与 HS/VS/DE 信号对齐。
+// 输入概述：像素数据及 HS/VS/DE 视频同步信号；控制参数由模式或模块参数给出。
+// 输出概述：处理后的像素流，以及与流水线延迟严格匹配的 HS/VS/DE 信号。
+// 时序约束：像素数据在视频像素时钟上升沿处理；复位极性以模块端口定义为准。
+// 关联文件：bilateral_core.v、bilateral_filtering_proc_to_hdmi.v
+// 维护要求：修改端口、位宽、流水线延迟或模式编码时，必须同步更新上层例化与项目文档。
 // =============================================================================
-
 `timescale 1ns / 1ps
 
 module bilateral_filtering_Line_buffer #(
@@ -26,7 +32,7 @@ module bilateral_filtering_Line_buffer #(
 );
 
     reg [10:0] s_cnt;
-    reg [10:0] s_cnt_d1; // ר�Ÿ� LB1 д����׼�����ӳٵ�ַ
+    reg [10:0] s_cnt_d1; // 专门给 LB1 写操作准备的延迟地址
 
     always @(posedge i_clk) begin
         if (i_rst) begin
@@ -38,12 +44,12 @@ module bilateral_filtering_Line_buffer #(
         end
     end
 
-    // ������ͬ���źŴ�� 
+    // 数据与同步信号打包
     wire [31:0] pack_in = {5'd0, i_hs, i_vs, i_data_en, i_rgb_data};
     wire [31:0] q1_32, q2_32;
 
-    // LB2: ���м���
-    // ��д��ַͬ������ǰ�н�����һ��ͬ�г�
+    // LB2: 存中间行
+    // 读写地址同步：当前列进，上一行同列出
     m4k_sync u_lb2 (
         .clock     (i_clk),
         .wren      (1'b1),               
@@ -53,7 +59,7 @@ module bilateral_filtering_Line_buffer #(
         .q         (q2_32)
     );
 
-    // LB1: ��������
+    // LB1: 存最老行
     m4k_sync u_lb1 (
         .clock     (i_clk),
         .wren      (1'b1),              
@@ -68,13 +74,13 @@ module bilateral_filtering_Line_buffer #(
         pack_in_d1 <= pack_in;
     end
 
-    wire [23:0] row1_rgb = q1_32[23:0];      // ������ (��)
-    wire [23:0] row2_rgb = q2_32[23:0];      // �м��� (��)
-    wire [23:0] row3_rgb = pack_in_d1[23:0]; // ��ǰ�� (��)
+    wire [23:0] row1_rgb = q1_32[23:0];      // 最老行 (上)
+    wire [23:0] row2_rgb = q2_32[23:0];      // 中间行 (中)
+    wire [23:0] row3_rgb = pack_in_d1[23:0]; // 当前行 (下)
 
     wire [2:0] row2_sync = q2_32[26:24];     
 
-    // 3x3 ������λ
+    // 3x3 窗口移位
     reg [23:0] w11,w12,w13, w21,w22,w23, w31,w32,w33;
     reg [2:0]  sync_shift [0:2];
 

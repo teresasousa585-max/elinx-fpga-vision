@@ -1,14 +1,20 @@
 // =============================================================================
+// 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 工程分区：图像增强工程（enhancement）
 // 文件名称：anguang_guided.v
 // 主要模块：anguang_guided
-// 功能说明：利用引导滤波估计暗光增强所需的光照分量。
-// 维护说明：修改接口或时序时，请同步更新本文件注释和上层例化。
+// 功能分类：暗光增强算法
+// 功能说明：通过引导滤波估计平滑照度分量，为暗光增益计算提供基础数据。
+// 输入概述：像素数据及 HS/VS/DE 视频同步信号；控制参数由模式或模块参数给出。
+// 输出概述：处理后的像素流，以及与流水线延迟严格匹配的 HS/VS/DE 信号。
+// 时序约束：像素数据在视频像素时钟上升沿处理；复位极性以模块端口定义为准。
+// 关联文件：guided_*、box_filter_*.v、anguang_enhance_apply.v
+// 维护要求：修改端口、位宽、流水线延迟或模式编码时，必须同步更新上层例化与项目文档。
 // =============================================================================
-
 `timescale 1 ns/ 1 ps
 module anguang_guided#(
-parameter H_TOTAL = 11'd1344,// ʵ���п�����     
-parameter EPSILON=16'd2000 // ƽ��ǿ�ȿ��Ʋ�����Խ��Խƽ��
+parameter H_TOTAL = 11'd1344, // 每行总时钟数（含消隐区）
+parameter EPSILON=16'd2000 // 平滑强度控制参数，越大越平滑
 )(
     input  wire        i_clk,
     input  wire        i_rst, 
@@ -51,7 +57,7 @@ guided_line_buffer #(
     .i_data_en(i_de), 
     .i_ycbcr(i_ycbcr), 
     .i_rgb(i_rgb),
-    //���
+    //输出
     .o_col_sum_Y(col_sum_y),
     .o_col_sum_Y2(col_sum_y2),
 
@@ -70,8 +76,8 @@ box_filter_y u_box_filter_y_anguang (
     .i_col_sum_Y2(col_sum_y2),
     .i_center_ycbcr(center_ycbcr),
     .i_rgb(center_rgb),
-    .i_hs(m1_hs), // ע�������� m1_hs��������������ͬ��
-    .i_vs(m1_vs), // ע�������� m1_vs��������������ͬ��
+    .i_hs(m1_hs), // 注意这里用 m1_hs，保持与数据流同步
+    .i_vs(m1_vs), // 注意这里用 m1_vs，保持与数据流同步
     .i_de(m1_de), 
 
     .o_mean_Y(mean_Y), 
@@ -89,7 +95,7 @@ wire [11:0] b_val;
 wire [23:0] ycbcr_sync1;
 wire [23:0] center_rgb_d2;
 guided_var_a_b #(
-    .EPSILON(EPSILON) // ƽ��ǿ�ȿ��Ʋ���
+    .EPSILON(EPSILON) // 平滑强度控制参数
 )u_guided_var_a_b_anguang (
     .i_clk(i_clk),
     .i_rst(i_rst),
@@ -97,10 +103,10 @@ guided_var_a_b #(
     .i_mean_Y2(mean_Y2),
     .i_ycbcr_sync(ycbcr_sync),
     .i_rgb(center_rgb_d1),
-    .i_hs(m2_hs), // ע�������� m2_hs��������������ͬ��
-    .i_vs(m2_vs), // ע�������� m2_vs������������
+    .i_hs(m2_hs), // 注意这里用 m2_hs，保持与数据流同步
+    .i_vs(m2_vs), // 注意这里用 m2_vs，保持与数据
     .i_de(m2_de),
-    .o_a_val(a_val), // ���� a �� b ��ֵ��ʱ������ˣ����������Ҫ��������������˿�
+    .o_a_val(a_val), // 输出局部线性系数 a；系数 b 由下一端口输出。
     .o_b_val(b_val),
     .o_ycbcr_out(ycbcr_sync1), 
     .o_rgb(center_rgb_d2),
@@ -118,16 +124,16 @@ guided_line_buffer_a_b #(
 )u_line_buffer_a_b (
     .i_clk(i_clk),
     .i_rst(i_rst),
-    .i_hs(m3_hs), // ע�������� m3_hs��������������ͬ��
-    .i_vs(m3_vs), // ע�������� m3_vs������������
+    .i_hs(m3_hs), // 注意这里用 m3_hs，保持与数据流同步
+    .i_vs(m3_vs), // 注意这里用 m3_vs，保持与数据
     .i_de(m3_de),
-    .i_ycbcr_delayed(ycbcr_sync1), // һ·��������ԭʼ YCbCr ���ݣ����ֶ���
+    .i_ycbcr_delayed(ycbcr_sync1), // 一路跟过来的原始 YCbCr 数据，保持对齐
     .i_rgb(center_rgb_d2),
     .i_a(a_val),
     .i_b(b_val),
     .o_col_sum_a(col_sum_a),
     .o_col_sum_b(col_sum_b),
-    .o_center_ycbcr(ycbcr_sync2), // ֱ������������������� YCbCr ����
+    .o_center_ycbcr(ycbcr_sync2), // 输出与系数窗口中心对齐的 YCbCr 像素。
     .o_rgb(center_rgb_d3),
     .o_hs_center(m4_hs),
     .o_vs_center(m4_vs),
@@ -142,10 +148,10 @@ box_filter_ab u_box_filter_ab (
     .i_rst(i_rst),
     .i_col_sum_a(col_sum_a),
     .i_col_sum_b(col_sum_b),
-    .i_center_ycbcr(ycbcr_sync2), // ֱ������������������� YCbCr ���ݽ����˲�
+    .i_center_ycbcr(ycbcr_sync2), // 输入与 a、b 系数窗口对齐的中心 YCbCr 像素。
     .i_rgb(center_rgb_d3),
-    .i_hs(m4_hs), // ע�������� m4_hs��������������ͬ��
-    .i_vs(m4_vs), // ע�������� m4_vs��������������ͬ��
+    .i_hs(m4_hs), // 注意这里用 m4_hs，保持与数据流同步
+    .i_vs(m4_vs), // 注意这里用 m4_vs，保持与数据流同步
     .i_de(m4_de), 
 
     .o_mean_a(mean_a), 
@@ -153,7 +159,7 @@ box_filter_ab u_box_filter_ab (
 
     .o_ycbcr_sync(ycbcr_sync3), 
     .o_rgb(center_rgb_d4),
-    .o_hs_sync(m5_hs), // �ٴζ�����ͬ���źţ����������ģ��ͬ��
+    .o_hs_sync(m5_hs), // 再次对齐后的同步信号，保持与后续模块同步
     .o_vs_sync(m5_vs),
     .o_de_sync(m5_de)
 );
@@ -162,19 +168,19 @@ wire [23:0] center_rgb_d5;
 guided_final_rebuild u_guided_final_rebuild (
     .i_clk(i_clk),
     .i_rst(i_rst),  
-    .i_mean_a(mean_a), // ���� box_filter_ab �� a ��ֵ
-    .i_mean_b(mean_b), // ���� box_filter_ab �� b ��ֵ
-    .i_ycbcr_sync(ycbcr_sync3), // ���� box_filter_ab �Ķ����� YCbCr ����
+    .i_mean_a(mean_a), // 来自 box_filter_ab 的 a 均值
+    .i_mean_b(mean_b), // 来自 box_filter_ab 的 b 均值
+    .i_ycbcr_sync(ycbcr_sync3), // 来自 box_filter_ab 的对齐后的 YCbCr 数据
     .i_rgb(center_rgb_d4),
-    .i_hs(m5_hs), // ע�������� m5_hs��������������ͬ��
-    .i_vs(m5_vs), // ע�������� m5_vs��������������ͬ��
-    .i_de(m5_de), // ע�������� m5_de��������������ͬ��
+    .i_hs(m5_hs), // 注意这里用 m5_hs，保持与数据流同步
+    .i_vs(m5_vs), // 注意这里用 m5_vs，保持与数据流同步
+    .i_de(m5_de), // 注意这里用 m5_de，保持与数据流同步
 
-    .o_final_ycbcr(final_ycbcr), // ��������� YCbCr ���ݣ��� HDMI ���ʹ��
+    .o_final_ycbcr(final_ycbcr), // 最终输出的 YCbCr 数据，供 HDMI 输出使用
     .o_rgb(center_rgb_d5),
-    .o_hs_out(m6_hs),      // ��������� HSYNC �ź�
-    .o_vs_out(m6_vs),      // ��������� VSYNC �ź�
-    .o_de_out(m6_de)       // �������������ʹ���ź�
+    .o_hs_out(m6_hs),      // 最终输出的 HSYNC 信号
+    .o_vs_out(m6_vs),      // 最终输出的 VSYNC 信号
+    .o_de_out(m6_de)       // 最终输出的数据使能信号
 );
 assign o_hs_out = m6_hs;
 assign o_vs_out = m6_vs;
@@ -185,6 +191,4 @@ endmodule
 
 
  
-
-
 

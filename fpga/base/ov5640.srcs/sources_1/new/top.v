@@ -1,10 +1,16 @@
 // =============================================================================
+// 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 工程分区：基础图像处理工程（base）
 // 文件名称：top.v
 // 主要模块：top
-// 功能说明：系统顶层集成，连接摄像头、图像处理、存储、显示与通信通路。
-// 维护说明：修改接口或时序时，请同步更新本文件注释和上层例化。
+// 功能分类：系统集成
+// 功能说明：集成时钟、摄像头、SDRAM、HDMI、串口控制、算法流水线和网络输出，完成板级信号连接。
+// 输入概述：板级时钟、按键、摄像头、串口、SDRAM 与 PHY 信号。
+// 输出概述：HDMI、SDRAM、摄像头控制、网络和状态指示等板级信号。
+// 时序约束：各时钟域通过 FIFO 或握手机制连接；引脚与时钟约束由 ov5640.edc 定义。
+// 关联文件：ov5640_capture.v、sdram_top.v、hdmi.v、video_algo_manager.v、uart_cmd_parser.v
+// 维护要求：修改端口、位宽、流水线延迟或模式编码时，必须同步更新上层例化与项目文档。
 // =============================================================================
-
 `timescale 1ns / 1ps
 
 module top (
@@ -313,7 +319,7 @@ module top (
     end else begin
       if (href_falling) begin
         cam_x <= 0;
-        cam_y <= cam_y + 1'b1;  // 严格确保换行时 X清零 Y累加
+        cam_y <= cam_y + 1'b1;  // 行结束时横坐标清零，纵坐标递增。
       end else if (cam_wr_en) begin
         cam_x <= cam_x + 1'b1;
       end
@@ -376,7 +382,7 @@ module top (
       .IO_sdram_dq(IO_sdram_dq)
   );
 
-  // HDMI 视频流预处理 (窗控与原版放大逻辑)
+  // HDMI 视频流预处理：根据缩放模式生成有效窗口和帧缓存读请求。
   wire [10:0] hdmi_x;
   wire [9:0] hdmi_y;
   wire hdmi_pre_de;
@@ -419,7 +425,7 @@ module top (
       .o_rgb(rotator_rgb)
   );
 
-  // 延迟对齐与缝合 (与 top(1).v 丝毫不差)
+  // 对帧缓存数据、窗口判定和旋转支路进行四拍延迟对齐与输出拼接。
   wire [15:0] current_pixel_d1 =
       (al_main_hdmi == 4 && al_sub_hdmi == 0) ? (hdmi_y[0]==0 ? sdram_rd_data : ram_q) :
       (al_main_hdmi == 4 && al_sub_hdmi == 1) ? (hdmi_y[1:0]==0 ? sdram_rd_data : ram_q) :

@@ -1,10 +1,16 @@
 // =============================================================================
+// 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 工程分区：图像增强工程（enhancement）
 // 文件名称：YCbCr_to_RGB.v
 // 主要模块：YCbCr_to_RGB
-// 功能说明：将 YCbCr 像素转换为 RGB 颜色空间。
-// 维护说明：修改接口或时序时，请同步更新本文件注释和上层例化。
+// 功能分类：颜色空间转换
+// 功能说明：将处理后的 YCbCr 像素恢复为 RGB888，并对齐原始旁路数据与视频同步信号。
+// 输入概述：像素数据及 HS/VS/DE 视频同步信号；控制参数由模式或模块参数给出。
+// 输出概述：处理后的像素流，以及与流水线延迟严格匹配的 HS/VS/DE 信号。
+// 时序约束：像素数据在视频像素时钟上升沿处理；复位极性以模块端口定义为准。
+// 关联文件：RGB_to_YCbCr.v、rgb2ycbcr.v
+// 维护要求：修改端口、位宽、流水线延迟或模式编码时，必须同步更新上层例化与项目文档。
 // =============================================================================
-
 `timescale 1 ns/ 1 ps
 module YCbCr_to_RGB (
     input  wire        i_clk,
@@ -13,12 +19,12 @@ module YCbCr_to_RGB (
     input  wire        i_vs,
     input  wire        i_data_en,
     input  wire [23:0] i_ycbcr,
-    input  wire [23:0] i_rgb,          // ԭʼ RGB ��·����
+    input  wire [23:0] i_rgb,          // 原始 RGB 旁路输入
     output wire        o_hs,
     output wire        o_vs,
     output wire        o_data_en,
-    output wire [23:0] o_rgb,          // ת������� RGB
-    output wire [23:0] o_original_rgb  // ���������ԭʼ RGB ��·���
+    output wire [23:0] o_rgb,          // 转换后的新 RGB
+    output wire [23:0] o_original_rgb  // 准确对齐的原始 RGB 旁路输出
 );
 
     reg [7:0]  y_in, cb_in, cr_in;
@@ -63,7 +69,7 @@ module YCbCr_to_RGB (
 
     wire signed [19:0] mult_r_cr, mult_g_cb, mult_g_cr, mult_b_cb;
 
-    //LPM_MULT ����Ϊ 2 Clock Latency
+    //LPM_MULT 设置为 2 Clock Latency
     lpmmult_10x10_signed u_mult_r_cr (.clock(i_clk), .dataa(cr_s), .datab(10'sd351), .result(mult_r_cr));
     lpmmult_10x10_signed u_mult_g_cb (.clock(i_clk), .dataa(cb_s), .datab(10'sd86),  .result(mult_g_cb));
     lpmmult_10x10_signed u_mult_g_cr (.clock(i_clk), .dataa(cr_s), .datab(10'sd179), .result(mult_g_cr));
@@ -120,17 +126,17 @@ module YCbCr_to_RGB (
             if (de5 == 1'b0) begin 
                 orgb <= 24'd0;
             end else begin
-                // R ǯλ
+                // R 钳位
                 if (sum_r_r[19]) orgb[23:16] <= 8'd0;
                 else if (sum_r_r[19:8] > 12'sd255) orgb[23:16] <= 8'd255;
                 else orgb[23:16] <= sum_r_r[15:8];
 
-                // G ǯλ
+                // G 钳位
                 if (sum_g_r[19]) orgb[15:8] <= 8'd0;
                 else if (sum_g_r[19:8] > 12'sd255) orgb[15:8] <= 8'd255;
                 else orgb[15:8] <= sum_g_r[15:8];
 
-                // B ǯλ
+                // B 钳位
                 if (sum_b_r[19]) orgb[7:0] <= 8'd0;
                 else if (sum_b_r[19:8] > 12'sd255) orgb[7:0] <= 8'd255;
                 else orgb[7:0] <= sum_b_r[15:8];

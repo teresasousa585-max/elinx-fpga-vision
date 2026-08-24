@@ -1,10 +1,16 @@
 // =============================================================================
+// 项目名称：2026 年全国大学生集成电路创新创业大赛国奖项目
+// 工程分区：图像增强工程（enhancement）
 // 文件名称：anguang_enhance_apply.v
 // 主要模块：anguang_enhance_apply
-// 功能说明：应用暗光增强增益并限制输出像素范围。
-// 维护说明：修改接口或时序时，请同步更新本文件注释和上层例化。
+// 功能分类：暗光增强算法
+// 功能说明：根据估计照度计算像素增益，完成暗部提升、亮部保护与输出限幅。
+// 输入概述：像素数据及 HS/VS/DE 视频同步信号；控制参数由模式或模块参数给出。
+// 输出概述：处理后的像素流，以及与流水线延迟严格匹配的 HS/VS/DE 信号。
+// 时序约束：像素数据在视频像素时钟上升沿处理；复位极性以模块端口定义为准。
+// 关联文件：anguang_guided.v、anguang_tohdmi.v、anguang_gain IP
+// 维护要求：修改端口、位宽、流水线延迟或模式编码时，必须同步更新上层例化与项目文档。
 // =============================================================================
-
 `timescale 1 ns/ 1 ps
 module anguang_enhance_apply(
 
@@ -12,7 +18,7 @@ module anguang_enhance_apply(
     input  wire        i_rst,
     
     input  wire [7:0]  i_y_guided,    // 引导滤波算出来的环境光
-    input  wire [23:0] i_rgb_aligned, // 完美对齐的原始 RGB 旁路
+    input  wire [23:0] i_rgb_aligned, // 准确对齐的原始 RGB 旁路
     input  wire        i_hs,
     input  wire        i_vs,
     input  wire        i_de,
