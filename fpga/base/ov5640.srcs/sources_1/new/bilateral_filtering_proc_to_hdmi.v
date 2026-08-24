@@ -15,16 +15,16 @@
 `timescale 1 ns / 1 ps
 
 // -----------------------------------------------------------------------------
-// [Ethereal注释] 正文导读：组织颜色转换、邻域缓存、双边核计算和时序对齐，输出可直接显示的滤波视频流。
-// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
-// [Ethereal注释] 修改约束：像素数据、有效信号和 HS/VS 必须保持同拍；跨时钟数据必须使用 FIFO 或握手。
+// 正文导读：组织颜色转换、邻域缓存、双边核计算和时序对齐，输出可直接显示的滤波视频流。
+// 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// 修改约束：像素数据、有效信号和 HS/VS 必须保持同拍；跨时钟数据必须使用 FIFO 或握手。
 // -----------------------------------------------------------------------------
-// [Ethereal注释] 模块 bilateral_filtering_proc_to_hdmi：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
+// 模块 bilateral_filtering_proc_to_hdmi：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module bilateral_filtering_proc_to_hdmi #(
-    // [Ethereal注释] 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
+    // 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
     parameter PIXEL_PER_LINE = 11'd1024
 ) (
-    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
+    // 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input wire i_clk,
     input wire i_rst,
 
@@ -40,7 +40,7 @@ module bilateral_filtering_proc_to_hdmi #(
     output wire o_de,
     output wire [23:0] o_rgb_data
 );
-  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+  // 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   wire [23:0] p11, p12, p13;
   wire [23:0] p21, p22, p23;
   wire [23:0] p31, p32, p33;
@@ -50,7 +50,7 @@ module bilateral_filtering_proc_to_hdmi #(
   wire m0_hs, m0_vs, m0_de;
   wire m1_hs, m1_vs, m1_de;
   wire m2_hs, m2_vs, m2_de;
-  // [Ethereal注释] 子模块例化 1（RGB_to_YCbCr）：将 RGB888 像素转换为 YCbCr，分离亮度与色度分量，供滤波、增强和分析算法使用。
+  // 子模块例化 1（RGB_to_YCbCr）：将 RGB888 像素转换为 YCbCr，分离亮度与色度分量，供滤波、增强和分析算法使用。
   RGB_to_YCbCr u_rgb_to_ycbcr (
       .i_clk(i_clk),
       .i_rst(i_rst),
@@ -65,9 +65,9 @@ module bilateral_filtering_proc_to_hdmi #(
       .o_ycbcr(ycrcb_data)
   );
 
-  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+  // 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   wire [23:0] p22_ycbcr;
-  // [Ethereal注释] 子模块例化 2（bilateral_filtering_Line_buffer）：使用行存储构造连续 3×3 像素窗口，并将窗口数据与 HS/VS/DE 信号对齐。
+  // 子模块例化 2（bilateral_filtering_Line_buffer）：使用行存储构造连续 3×3 像素窗口，并将窗口数据与 HS/VS/DE 信号对齐。
   bilateral_filtering_Line_buffer #(
       .H_TOTAL(11'd1344)
   ) u_line_buffer (
@@ -93,9 +93,9 @@ module bilateral_filtering_proc_to_hdmi #(
       .o_data_en(m1_de)
   );
 
-  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+  // 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   wire [23:0] filtered_ycbcr;
-  // [Ethereal注释] 子模块例化 3（bilateral_core）：根据空间距离和像素差计算双边权重，对中心像素进行保边平滑。
+  // 子模块例化 3（bilateral_core）：根据空间距离和像素差计算双边权重，对中心像素进行保边平滑。
   bilateral_core u_bilateral_core (
       .i_clk(i_clk),
       .i_rst(i_rst),
@@ -118,7 +118,7 @@ module bilateral_filtering_proc_to_hdmi #(
       .o_data_en(m2_de),
       .o_ycbcr_filtered(filtered_ycbcr) // 直接输出滤波后的 YCbCr 数据，送往 RGB 转换模块
   );
-  // [Ethereal注释] 子模块例化 4（YCbCr_to_RGB）：将处理后的 YCbCr 像素恢复为 RGB888，并对齐原始旁路数据与视频同步信号。
+  // 子模块例化 4（YCbCr_to_RGB）：将处理后的 YCbCr 像素恢复为 RGB888，并对齐原始旁路数据与视频同步信号。
   YCbCr_to_RGB u_ycbcr_to_rgb (
       .i_clk(i_clk),
       .i_rst(i_rst),
@@ -132,7 +132,7 @@ module bilateral_filtering_proc_to_hdmi #(
       .o_data_en(m_de),
       .o_rgb(p22)
   );
-  // [Ethereal注释] 组合连线组 1：从 o_hs 开始的连续赋值随右值立即更新，不增加寄存器延迟。
+  // 组合连线组 1：从 o_hs 开始的连续赋值随右值立即更新，不增加寄存器延迟。
   assign o_hs = m_hs;
   assign o_vs = m_vs;
   assign o_de = m_de;

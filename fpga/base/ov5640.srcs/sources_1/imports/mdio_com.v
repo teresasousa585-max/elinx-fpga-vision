@@ -35,13 +35,13 @@
 
 //mdc, mdio数据传输时序代码
 // -----------------------------------------------------------------------------
-// [Ethereal注释] 正文导读：实现 MDC/MDIO 管理接口的寄存器读写时序。
-// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
-// [Ethereal注释] 修改约束：协议字段、有效脉冲和跨时钟控制必须成组更新，并与上位机及外设时序保持一致。
+// 正文导读：实现 MDC/MDIO 管理接口的寄存器读写时序。
+// 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// 修改约束：协议字段、有效脉冲和跨时钟控制必须成组更新，并与上位机及外设时序保持一致。
 // -----------------------------------------------------------------------------
-// [Ethereal注释] 模块 mdio_com：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
+// 模块 mdio_com：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module mdio_com (
-    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
+    // 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input             mdc,        // mdc控制接口传输所需时钟，此处为20khz
     inout             mdio,
     input             reset_n,
@@ -50,16 +50,16 @@ module mdio_com (
     output reg        tr_end      // 传输结束标志
 );
 
-  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+  // 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [5:0] cyc_count;
   reg       reg_mdio;
 
   // 当reg_mdio为0时，驱动MDIO线为低电平；为1时，释放总线（高阻态'bz'）
   // 外部的上拉电阻会将总线拉高，形成逻辑'1'
-  // [Ethereal注释] 组合连线组 1：从 mdio 开始的连续赋值随右值立即更新，不增加寄存器延迟。
+  // 组合连线组 1：从 mdio 开始的连续赋值随右值立即更新，不增加寄存器延迟。
   assign mdio = reg_mdio ? 1'bz : 1'b0;
 
-  // [Ethereal注释] 时序过程 1：由 mdc posedge，reset_n negedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
+  // 时序过程 1：由 mdc posedge，reset_n negedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge mdc or negedge reset_n) begin
     if (!reset_n) cyc_count <= 6'b111111;
     else begin
@@ -68,13 +68,13 @@ module mdio_com (
     end
   end
 
-  // [Ethereal注释] 时序过程 2：由 mdc negedge，reset_n negedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
+  // 时序过程 2：由 mdc negedge，reset_n negedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(negedge mdc or negedge reset_n) begin
     if (!reset_n) begin
       tr_end   <= 0;
       reg_mdio <= 1;  // 默认释放总线
     end else
-      // [Ethereal注释] 分支选择 1：依据 cyc_count 选择状态或算法路径；default 覆盖非法或空闲条件。
+      // 分支选择 1：依据 cyc_count 选择状态或算法路径；default 覆盖非法或空闲条件。
       case (cyc_count)
         0: begin
           tr_end   <= 0;

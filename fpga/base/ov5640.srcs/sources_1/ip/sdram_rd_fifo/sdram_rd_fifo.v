@@ -12,11 +12,11 @@
 `timescale 1 ps / 1 ps
 // synopsys translate_on
 // -----------------------------------------------------------------------------
-// [Ethereal注释] 正文导读：封装 FIFO IP，在数据通路中完成缓存、速率匹配或跨时钟域传输。
-// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
-// [Ethereal注释] 修改约束：该文件为厂商 IP 封装；参数、端口或例化修改后必须重新生成并复核上层连接。
+// 正文导读：封装 FIFO IP，在数据通路中完成缓存、速率匹配或跨时钟域传输。
+// 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// 修改约束：该文件为厂商 IP 封装；参数、端口或例化修改后必须重新生成并复核上层连接。
 // -----------------------------------------------------------------------------
-// [Ethereal注释] 模块 sdram_rd_fifo：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
+// 模块 sdram_rd_fifo：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module sdram_rd_fifo (
 	aclr,
 	rdclk,
@@ -29,7 +29,7 @@ module sdram_rd_fifo (
 	q
 	);
 
-	// [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
+	// 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
 	input    aclr;
 	input    rdclk;
 	input    wrclk;
@@ -40,7 +40,7 @@ module sdram_rd_fifo (
 	output    [11:0]    rdusedw;
 	output    [11:0]    wrusedw;
 
-	// [Ethereal注释] 子模块例化 1（dcfifo）：调用 FIFO 组件，完成数据缓存或跨时钟域传输。
+	// 子模块例化 1（dcfifo）：调用 FIFO 组件，完成数据缓存或跨时钟域传输。
 	dcfifo    dcfifo (
 		.rdclk (rdclk),
 		.wrreq (wrreq),
@@ -57,7 +57,7 @@ module sdram_rd_fifo (
 		.rdusedw (rdusedw)
 	);
 
-	// [Ethereal注释] IP 参数区：配置厂商原语的深度、宽度、寄存器级和目标器件属性。
+	// IP 参数区：配置厂商原语的深度、宽度、寄存器级和目标器件属性。
 	defparam
 		dcfifo.add_ram_output_register = "ON",
 		dcfifo.clocks_are_synchronized = "FALSE",

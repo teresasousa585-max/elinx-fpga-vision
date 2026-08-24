@@ -15,13 +15,13 @@
 `timescale 1ns / 1ps
 
 // -----------------------------------------------------------------------------
-// [Ethereal注释] 正文导读：实现 SDRAM 上电初始化、自动刷新、突发读写和芯片引脚时序。
-// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
-// [Ethereal注释] 修改约束：读写地址、突发长度、FIFO 清空和跨时钟握手必须保持一致，避免帧错位或数据溢出。
+// 正文导读：实现 SDRAM 上电初始化、自动刷新、突发读写和芯片引脚时序。
+// 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// 修改约束：读写地址、突发长度、FIFO 清空和跨时钟握手必须保持一致，避免帧错位或数据溢出。
 // -----------------------------------------------------------------------------
-// [Ethereal注释] 模块 sdram_control：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
+// 模块 sdram_control：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module sdram_control (
-    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
+    // 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input wire I_ref_clk,  // 参考时钟 (125MHz)
     input wire I_rst_n,    // 复位信号，低电平有效
 
@@ -55,7 +55,7 @@ module sdram_control (
   // ========================================================
   // 时序参数配置 (125MHz下的最优参数，单位为时钟周期）
   // ========================================================
-  // [Ethereal注释] 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
+  // 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
   localparam TRP = 3;
   localparam TRC = 8;
   localparam TRSC = 3;
@@ -85,7 +85,7 @@ module sdram_control (
   localparam S_WR = 4'd5;
   localparam S_RD = 4'd6;
 
-  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+  // 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [ 3:0] state;
   reg [14:0] delay_cnt;
   reg [ 3:0] arf_cnt;
@@ -101,13 +101,13 @@ module sdram_control (
   reg [ 9:0] burst_remain;
   reg [ 9:0] current_col;
 
-  // [Ethereal注释] 组合连线组 1：从 O_sdram_cke 开始的连续赋值随右值立即更新，不增加寄存器延迟。
+  // 组合连线组 1：从 O_sdram_cke 开始的连续赋值随右值立即更新，不增加寄存器延迟。
   assign O_sdram_cke = 1'b1;
 
   // ========================================================
   // 核心主状态机 (Auto-Precharge Pipeline FSM)
   // ========================================================
-  // [Ethereal注释] 时序过程 1：由 I_ref_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
+  // 时序过程 1：由 I_ref_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge I_ref_clk) begin
     if (!I_rst_n) begin
       state <= S_INIT_WAIT;
@@ -137,7 +137,7 @@ module sdram_control (
         delay_cnt <= delay_cnt - 1'b1;
         {O_sdram_cs_n, O_sdram_ras_n, O_sdram_cas_n, O_sdram_we_n} <= CMD_NOP;
       end else begin
-        // [Ethereal注释] 分支选择 1：依据 state 选择状态或算法路径；default 覆盖非法或空闲条件。
+        // 分支选择 1：依据 state 选择状态或算法路径；default 覆盖非法或空闲条件。
         case (state)
           S_INIT_WAIT: begin
             {O_sdram_cs_n, O_sdram_ras_n, O_sdram_cas_n, O_sdram_we_n} <= CMD_PRE;
@@ -240,15 +240,15 @@ module sdram_control (
   // ========================================================
   // Write Path (已加入 Normal FIFO 输出对齐机制)
   // ========================================================
-  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+  // 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg       wr_ack_r;
   reg [9:0] wr_data_cnt;
   reg       wr_out_en;
 
-  // [Ethereal注释] 组合连线组 1：从 O_sdram_wr_ack 开始的连续赋值随右值立即更新，不增加寄存器延迟。
+  // 组合连线组 1：从 O_sdram_wr_ack 开始的连续赋值随右值立即更新，不增加寄存器延迟。
   assign O_sdram_wr_ack = wr_ack_r;
 
-  // [Ethereal注释] 时序过程 2：由 I_ref_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
+  // 时序过程 2：由 I_ref_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge I_ref_clk) begin
     if (!I_rst_n) begin
       wr_ack_r <= 1'b0;
@@ -270,23 +270,23 @@ module sdram_control (
   end
 
   // 使用平移后的使能信号驱动三态门
-  // [Ethereal注释] 组合连线组 1：从 IO_sdram_dq 开始的连续赋值随右值立即更新，不增加寄存器延迟。
+  // 组合连线组 1：从 IO_sdram_dq 开始的连续赋值随右值立即更新，不增加寄存器延迟。
   assign IO_sdram_dq = (wr_out_en) ? I_sdram_wr_data : 16'hzzzz;
 
   // ========================================================
   // Read Path (匹配物理读取延迟)
   // ========================================================
-  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+  // 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [ 9:0] rd_shift;
   reg        rd_ack_r;
   reg [ 9:0] rd_data_cnt;
   reg [15:0] rd_data_r;
 
-  // [Ethereal注释] 组合连线组 1：从 O_sdram_rd_ack 开始的连续赋值随右值立即更新，不增加寄存器延迟。
+  // 组合连线组 1：从 O_sdram_rd_ack 开始的连续赋值随右值立即更新，不增加寄存器延迟。
   assign O_sdram_rd_ack  = rd_ack_r;
   assign O_sdram_rd_data = rd_data_r;
 
-  // [Ethereal注释] 时序过程 3：由 I_ref_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
+  // 时序过程 3：由 I_ref_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge I_ref_clk) begin
     if (!I_rst_n) begin
       rd_shift <= 10'd0;

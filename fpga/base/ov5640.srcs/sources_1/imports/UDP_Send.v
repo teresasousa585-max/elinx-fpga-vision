@@ -15,13 +15,13 @@
 `timescale 1ns / 1ps
 
 // -----------------------------------------------------------------------------
-// [Ethereal注释] 正文导读：生成包含视频载荷的以太网/IPv4/UDP 数据帧，并按帧起点协议发送 RGB565 分片。
-// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
-// [Ethereal注释] 修改约束：协议字段、有效脉冲和跨时钟控制必须成组更新，并与上位机及外设时序保持一致。
+// 正文导读：生成包含视频载荷的以太网/IPv4/UDP 数据帧，并按帧起点协议发送 RGB565 分片。
+// 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// 修改约束：协议字段、有效脉冲和跨时钟控制必须成组更新，并与上位机及外设时序保持一致。
 // -----------------------------------------------------------------------------
-// [Ethereal注释] 模块 UDP_Send：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
+// 模块 UDP_Send：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module UDP_Send (
-    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
+    // 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input wire Clk,
     input wire Rst_n,
 
@@ -46,13 +46,13 @@ module UDP_Send (
     output wire [12:0] wrusedw
 );
 
-  // [Ethereal注释] 组合连线组 1：从 GMII_GTXC 开始的连续赋值随右值立即更新，不增加寄存器延迟。
+  // 组合连线组 1：从 GMII_GTXC 开始的连续赋值随右值立即更新，不增加寄存器延迟。
   assign GMII_GTXC = Clk;
 
-  // [Ethereal注释] 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
+  // 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
   localparam IDLE = 0, PRE = 1, HDRS = 2, DATA = 3, CRC = 4, IPG = 5;
 
-  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+  // 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg  [ 2:0] state;
   reg  [ 5:0] hdr_cnt;
   reg  [15:0] data_cnt;
@@ -68,7 +68,7 @@ module UDP_Send (
   // 包计数器强制与物理帧对齐
   // =========================================================================
   reg  [ 9:0] pkt_cnt;
-  // [Ethereal注释] 时序过程 1：由 Clk posedge，Rst_n negedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
+  // 时序过程 1：由 Clk posedge，Rst_n negedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge Clk or negedge Rst_n) begin
     if (!Rst_n) begin
       pkt_cnt <= 10'd0;
@@ -79,25 +79,25 @@ module UDP_Send (
     end
   end
 
-  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+  // 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   wire is_first_packet = (pkt_cnt == 10'd0);
 
   reg [7:0] hdr_buf[0:41];
 
-  // [Ethereal注释] 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
+  // 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
   localparam L_DATA_LEN = 16'd1200;
   localparam L_IP_TOT = 16'd1228;
   localparam L_UDP_TOT = 16'd1208;
   localparam L_IP_CHK = 16'hB262;
 
-  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+  // 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   wire [7:0] fifo_q;
   reg        fifo_rdreq;
 
   // =========================================================================
   // 将 VSYNC 引入内部 DCFIFO 的异步复位
   // =========================================================================
-  // [Ethereal注释] 子模块例化 1（eth_dcfifo）：封装 FIFO IP，在数据通路中完成缓存、速率匹配或跨时钟域传输。
+  // 子模块例化 1（eth_dcfifo）：封装 FIFO IP，在数据通路中完成缓存、速率匹配或跨时钟域传输。
   eth_dcfifo u_eth_fifo (
       .aclr   (!Rst_n || frame_vsync),
       .data   (wrdata),
@@ -110,7 +110,7 @@ module UDP_Send (
       .wrusedw()
   );
 
-  // [Ethereal注释] 子模块例化 2（CRC32_D8）：按字节更新以太网 CRC32，生成帧校验序列。
+  // 子模块例化 2（CRC32_D8）：按字节更新以太网 CRC32，生成帧校验序列。
   CRC32_D8 u_crc32 (
       .Clk    (Clk),
       .Reset  (c_rst_n),
@@ -121,7 +121,7 @@ module UDP_Send (
       .Crc_eth(c_out)
   );
 
-  // [Ethereal注释] 时序过程 2：由 Clk posedge，Rst_n negedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
+  // 时序过程 2：由 Clk posedge，Rst_n negedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge Clk or negedge Rst_n) begin
     if (!Rst_n) begin
       state <= IDLE;
@@ -139,7 +139,7 @@ module UDP_Send (
         n_txen <= 0;
         c_en   <= 0;
       end else begin
-        // [Ethereal注释] 分支选择 1：依据 state 选择状态或算法路径；default 覆盖非法或空闲条件。
+        // 分支选择 1：依据 state 选择状态或算法路径；default 覆盖非法或空闲条件。
         case (state)
           IDLE: begin
             n_txen <= 0;
@@ -242,7 +242,7 @@ module UDP_Send (
 
           CRC: begin
             c_en <= 0;
-            // [Ethereal注释] 分支选择 2：依据 hdr_cnt 选择状态或算法路径；default 覆盖非法或空闲条件。
+            // 分支选择 2：依据 hdr_cnt 选择状态或算法路径；default 覆盖非法或空闲条件。
             case (hdr_cnt)
               0: n_txd <= c_out[31:24];
               1: n_txd <= c_out[23:16];
@@ -269,7 +269,7 @@ module UDP_Send (
     end
   end
 
-  // [Ethereal注释] 时序过程 3：由 Clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
+  // 时序过程 3：由 Clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge Clk) begin
     GMII_TXD  <= n_txd;
     GMII_TXEN <= n_txen;

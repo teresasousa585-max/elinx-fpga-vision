@@ -10,24 +10,24 @@
 // =============================================================================
 `timescale 1 ps / 1 ps
 // -----------------------------------------------------------------------------
-// [Ethereal注释] 正文导读：封装移位寄存器 IP，为像素、系数或同步信号提供固定拍数延迟。
-// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
-// [Ethereal注释] 修改约束：该文件为厂商 IP 封装；参数、端口或例化修改后必须重新生成并复核上层连接。
+// 正文导读：封装移位寄存器 IP，为像素、系数或同步信号提供固定拍数延迟。
+// 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// 修改约束：该文件为厂商 IP 封装；参数、端口或例化修改后必须重新生成并复核上层连接。
 // -----------------------------------------------------------------------------
-// [Ethereal注释] 模块 shift_delay_32w_8d：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
+// 模块 shift_delay_32w_8d：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module shift_delay_32w_8d (
 	clock,
 	shiftin,
 	shiftout,
 	taps);
 
-	// [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
+	// 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
 	input	  clock;
 	input	[31:0]  shiftin;
 	output	[31:0]  shiftout;
 	output	[31:0]  taps;
 
-	// [Ethereal注释] 子模块例化 1（altshift_taps）：例化 altshift_taps 子模块，完成当前数据通路中的对应处理阶段。
+	// 子模块例化 1（altshift_taps）：例化 altshift_taps 子模块，完成当前数据通路中的对应处理阶段。
 	altshift_taps	ALTSHIFT_TAPS_component (
 			.clock 		(clock			),
 			.shiftin 	(shiftin		),
@@ -37,7 +37,7 @@ module shift_delay_32w_8d (
 			.clken 		(1'b1			)
 			);
 
-// [Ethereal注释] IP 参数区：配置厂商原语的深度、宽度、寄存器级和目标器件属性。
+// IP 参数区：配置厂商原语的深度、宽度、寄存器级和目标器件属性。
 defparam
 	ALTSHIFT_TAPS_component.intended_device_family = "Stratix",
 	ALTSHIFT_TAPS_component.lpm_hint = "RAM_BLOCK_TYPE=M4K",

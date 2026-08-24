@@ -14,18 +14,18 @@
 // =============================================================================
 `timescale 1 ns/ 1 ps
 // -----------------------------------------------------------------------------
-// [Ethereal注释] 正文导读：组织暗光照度估计、增强应用和视频时序对齐，输出 RGB888 增强画面。
-// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
-// [Ethereal注释] 修改约束：像素数据、有效信号和 HS/VS 必须保持同拍；跨时钟数据必须使用 FIFO 或握手。
+// 正文导读：组织暗光照度估计、增强应用和视频时序对齐，输出 RGB888 增强画面。
+// 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// 修改约束：像素数据、有效信号和 HS/VS 必须保持同拍；跨时钟数据必须使用 FIFO 或握手。
 // -----------------------------------------------------------------------------
-// [Ethereal注释] 模块 anguang_tohdmi：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
+// 模块 anguang_tohdmi：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module anguang_tohdmi#(
-// [Ethereal注释] 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
+// 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
 parameter H_TOTAL = 11'd1344, // 每行总时钟数（含消隐区）
 parameter EPSILON=16'd1000
 
 )(
-// [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
+// 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
 input wire i_clk,
 input wire i_rst,
 
@@ -42,7 +42,7 @@ output wire [23:0] o_rgb_data,
 output wire [23:0] o_original_rgb_data// 原始数据
 );
 
-// [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+// 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
 wire [23:0] ycbcr_data;
 wire [23:0] original_rgb_data;
 wire [23:0] filtered_rgb;
@@ -55,7 +55,7 @@ wire m5_hs,m5_vs,m5_de;
 wire m6_hs,m6_vs,m6_de;
 
 
-// [Ethereal注释] 子模块例化 1（RGB_to_YCbCr）：将 RGB888 像素转换为 YCbCr，分离亮度与色度分量，供滤波、增强和分析算法使用。
+// 子模块例化 1（RGB_to_YCbCr）：将 RGB888 像素转换为 YCbCr，分离亮度与色度分量，供滤波、增强和分析算法使用。
 RGB_to_YCbCr u_rgb2ycbcr_anguang (
     .i_clk(i_clk),
     .i_rst(i_rst),
@@ -71,10 +71,10 @@ RGB_to_YCbCr u_rgb2ycbcr_anguang (
     .o_raw_rgb(original_rgb_data)
 ); 
 
-// [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+// 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
 wire [23:0] original_rgb_data_d1;
 wire [7:0] guided_y;
-// [Ethereal注释] 子模块例化 2（anguang_guided）：通过引导滤波估计平滑照度分量，为暗光增益计算提供基础数据。
+// 子模块例化 2（anguang_guided）：通过引导滤波估计平滑照度分量，为暗光增益计算提供基础数据。
 anguang_guided #(
    .H_TOTAL(H_TOTAL) ,
    .EPSILON(EPSILON)
@@ -92,10 +92,10 @@ anguang_guided #(
     .o_y(guided_y),
     .o_rgb(original_rgb_data_d1)//输出滤波后的数据可以用来做对比
 );
-// [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+// 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
 wire [23:0] original_rgb_data_d2;
 wire [23:0] enhanced_rgb_data;
-// [Ethereal注释] 子模块例化 3（anguang_enhance_apply）：根据估计照度计算像素增益，完成暗部提升、亮部保护与输出限幅。
+// 子模块例化 3（anguang_enhance_apply）：根据估计照度计算像素增益，完成暗部提升、亮部保护与输出限幅。
 anguang_enhance_apply u_anguang_enhance_apply (
     .i_clk(i_clk),
     .i_rst(i_rst),
@@ -112,10 +112,10 @@ anguang_enhance_apply u_anguang_enhance_apply (
     .o_de(m3_de)
 );
 /*
-// [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+// 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
 wire [23:0] enhanced_rgb_data_mid;
 wire [23:0] original_rgb_data_d3;
-// [Ethereal注释] 子模块例化 4（anguang_midvalue）：例化 anguang_midvalue 子模块，完成当前数据通路中的对应处理阶段。
+// 子模块例化 4（anguang_midvalue）：例化 anguang_midvalue 子模块，完成当前数据通路中的对应处理阶段。
 anguang_midvalue u_anguang_midvalue (
     .i_clk(i_clk),
     .i_rst(i_rst),
@@ -134,7 +134,7 @@ anguang_midvalue u_anguang_midvalue (
     .o_de(m4_de)
 );
 */
-// [Ethereal注释] 组合连线组 1：从 o_rgb_data 开始的连续赋值随右值立即更新，不增加寄存器延迟。
+// 组合连线组 1：从 o_rgb_data 开始的连续赋值随右值立即更新，不增加寄存器延迟。
 assign o_rgb_data= enhanced_rgb_data;
 assign o_hs = m3_hs;
 assign o_vs = m3_vs;

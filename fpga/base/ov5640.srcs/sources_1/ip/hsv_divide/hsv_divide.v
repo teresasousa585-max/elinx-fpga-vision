@@ -45,11 +45,11 @@
 `timescale 1 ps / 1 ps
 // synopsys translate_on
 // -----------------------------------------------------------------------------
-// [Ethereal注释] 正文导读：封装定点除法器 IP，输出商与余数供颜色空间转换使用。
-// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
-// [Ethereal注释] 修改约束：该文件为厂商 IP 封装；参数、端口或例化修改后必须重新生成并复核上层连接。
+// 正文导读：封装定点除法器 IP，输出商与余数供颜色空间转换使用。
+// 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// 修改约束：该文件为厂商 IP 封装；参数、端口或例化修改后必须重新生成并复核上层连接。
 // -----------------------------------------------------------------------------
-// [Ethereal注释] 模块 hsv_divide：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
+// 模块 hsv_divide：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module  hsv_divide (
 	clock,
 	denom,
@@ -57,20 +57,20 @@ module  hsv_divide (
 	quotient,
 	remain);
 
-	// [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
+	// 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
 	input	clock;
 	input	[7:0]  denom;
 	input	[15:0]  numer;
 	output	[15:0]  quotient;
 	output	[7:0]  remain;
 
-	// [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+	// 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
 	wire [7:0] sub_wire0;
 	wire [15:0] sub_wire1;
 	wire [7:0] remain = sub_wire0[7:0];
 	wire [15:0] quotient = sub_wire1[15:0];
 
-	// [Ethereal注释] 子模块例化 1（lpm_divide）：调用硬件除法资源，执行定点除法并输出商或余数。
+	// 子模块例化 1（lpm_divide）：调用硬件除法资源，执行定点除法并输出商或余数。
 	lpm_divide	LPM_DIVIDE_component (
 				.aclr (1'b0),
 				.clock (clock),
@@ -79,7 +79,7 @@ module  hsv_divide (
 				.numer (numer),
 				.remain (sub_wire0),
 				.quotient (sub_wire1));
-	// [Ethereal注释] IP 参数区：配置厂商原语的深度、宽度、寄存器级和目标器件属性。
+	// IP 参数区：配置厂商原语的深度、宽度、寄存器级和目标器件属性。
 	defparam
 		LPM_DIVIDE_component.lpm_drepresentation = "UNSIGNED",
 		LPM_DIVIDE_component.lpm_hint = "LPM_REMAINDERPOSITIVE=TRUE",

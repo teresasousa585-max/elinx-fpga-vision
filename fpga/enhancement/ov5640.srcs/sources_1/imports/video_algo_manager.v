@@ -15,13 +15,13 @@
 `timescale 1ns / 1ps
 
 // -----------------------------------------------------------------------------
-// [Ethereal注释] 正文导读：实例化引导滤波/磨皮和暗光增强支路，根据主模式 10、11 选择最终输出视频流。
-// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
-// [Ethereal注释] 修改约束：像素数据、有效信号和 HS/VS 必须保持同拍；跨时钟数据必须使用 FIFO 或握手。
+// 正文导读：实例化引导滤波/磨皮和暗光增强支路，根据主模式 10、11 选择最终输出视频流。
+// 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// 修改约束：像素数据、有效信号和 HS/VS 必须保持同拍；跨时钟数据必须使用 FIFO 或握手。
 // -----------------------------------------------------------------------------
-// [Ethereal注释] 模块 image_process_pipe：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
+// 模块 image_process_pipe：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module image_process_pipe (
-    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
+    // 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input wire clk_hdmi,
     input wire sys_rst,
 
@@ -42,11 +42,11 @@ module image_process_pipe (
     output reg [23:0] final_rgb
 );
   //引导滤波
-  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+  // 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   wire guide_hs, guide_vs, guide_de;
   wire [23:0] guide_rgb;
   //引导滤波和美颜磨皮
-  // [Ethereal注释] 子模块例化 1（guided_to_hdmi）：集成灰度引导、局部统计、系数滤波和图像重建；子模式选择通用引导滤波或磨皮处理。
+  // 子模块例化 1（guided_to_hdmi）：集成灰度引导、局部统计、系数滤波和图像重建；子模式选择通用引导滤波或磨皮处理。
   guided_to_hdmi u_guided_filtering (
       .i_clk     (clk_hdmi),
       .i_rst     (sys_rst),
@@ -62,10 +62,10 @@ module image_process_pipe (
       .o_rgb_data(guide_rgb)
   );
 	//暗光处理
-  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+  // 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   wire anguang_hs, anguang_vs, anguang_de;
   wire [23:0] anguang_rgb;
-  // [Ethereal注释] 子模块例化 2（anguang_tohdmi）：组织暗光照度估计、增强应用和视频时序对齐，输出 RGB888 增强画面。
+  // 子模块例化 2（anguang_tohdmi）：组织暗光照度估计、增强应用和视频时序对齐，输出 RGB888 增强画面。
   anguang_tohdmi u_anguang_proc (
       .i_clk     (clk_hdmi),
       .i_rst     (sys_rst),
@@ -80,9 +80,9 @@ module image_process_pipe (
       .o_rgb_data(anguang_rgb)
   );
   // 输出通道路由 (MUX)：保证各模式下时序绝对安全对齐
-  // [Ethereal注释] 时序过程 1：由 clk_hdmi posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
+  // 时序过程 1：由 clk_hdmi posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk_hdmi) begin
-    // [Ethereal注释] 分支选择 1：依据 al_main_hdmi 选择状态或算法路径；default 覆盖非法或空闲条件。
+    // 分支选择 1：依据 al_main_hdmi 选择状态或算法路径；default 覆盖非法或空闲条件。
     case (al_main_hdmi)
       4'd10: begin
         final_hs  <= guide_hs;

@@ -15,16 +15,16 @@
 `timescale 1ns / 1ps
 
 // -----------------------------------------------------------------------------
-// [Ethereal注释] 正文导读：通过 I2C 寄存器序列初始化 OV5640 的分辨率、像素格式和输出时序。
-// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
-// [Ethereal注释] 修改约束：协议字段、有效脉冲和跨时钟控制必须成组更新，并与上位机及外设时序保持一致。
+// 正文导读：通过 I2C 寄存器序列初始化 OV5640 的分辨率、像素格式和输出时序。
+// 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// 修改约束：协议字段、有效脉冲和跨时钟控制必须成组更新，并与上位机及外设时序保持一致。
 // -----------------------------------------------------------------------------
-// [Ethereal注释] 模块 ov5640_i2c_init：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
+// 模块 ov5640_i2c_init：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module ov5640_i2c_init #(
-    // [Ethereal注释] 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
+    // 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
     parameter CLK_FRE = 100  // 系统时钟频率，默认 100MHz
 ) (
-    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
+    // 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input wire i_clk,
     input wire i_rst,
 
@@ -33,7 +33,7 @@ module ov5640_i2c_init #(
     output reg  o_init_done
 );
 
-  // [Ethereal注释] 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
+  // 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
   localparam DEV_ADDR = 8'h78;  // OV5640 写地址
   localparam REG_NUM = 251;  // 寄存器总数为251 
 
@@ -42,12 +42,12 @@ module ov5640_i2c_init #(
   // 帧间延时 2ms，确保芯片有足够时间处理复位和 PLL 切换
   localparam DELAY_MAX = 800;  // 400kHz 下，800 个 tick 正好是 2 毫秒
 
-  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+  // 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [15:0] clk_cnt;
   reg i2c_tick;
 
   // 产生 400kHz 的 tick
-  // [Ethereal注释] 时序过程 1：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
+  // 时序过程 1：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge i_clk) begin
     if (i_rst) begin
       clk_cnt  <= 0;
@@ -62,10 +62,10 @@ module ov5640_i2c_init #(
   end
 
   // I2C 状态机 (必须要有 2ms 帧间延时)
-  // [Ethereal注释] 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
+  // 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
   localparam S_IDLE = 0, S_START = 1, S_SEND_BYTE = 2, S_ACK = 3, S_STOP = 4;
 
-  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+  // 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [2:0] state, next_state;
   reg [1:0] step;
   reg [3:0] bit_cnt;
@@ -75,14 +75,14 @@ module ov5640_i2c_init #(
   reg [31:0] delay_cnt;
   reg [ 8:0] lut_index;
 
-  // [Ethereal注释] 组合连线组 1：从 io_i2c_scl 开始的连续赋值随右值立即更新，不增加寄存器延迟。
+  // 组合连线组 1：从 io_i2c_scl 开始的连续赋值随右值立即更新，不增加寄存器延迟。
   assign io_i2c_scl = r_scl;
   assign io_i2c_sda = r_sda ? 1'bz : 1'b0;
 
-  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+  // 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [23:0] lut_data;
 
-  // [Ethereal注释] 时序过程 2：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
+  // 时序过程 2：由 i_clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge i_clk) begin
     if (i_rst) begin
       state       <= S_IDLE;
@@ -95,7 +95,7 @@ module ov5640_i2c_init #(
       lut_index   <= 0;
       o_init_done <= 1'b0;
     end else if (i2c_tick) begin
-      // [Ethereal注释] 分支选择 1：依据 state 选择状态或算法路径；default 覆盖非法或空闲条件。
+      // 分支选择 1：依据 state 选择状态或算法路径；default 覆盖非法或空闲条件。
       case (state)
         S_IDLE: begin
           r_scl <= 1'b1;
@@ -113,7 +113,7 @@ module ov5640_i2c_init #(
         end
 
         S_START: begin
-          // [Ethereal注释] 分支选择 2：依据 step 选择状态或算法路径；default 覆盖非法或空闲条件。
+          // 分支选择 2：依据 step 选择状态或算法路径；default 覆盖非法或空闲条件。
           case (step)
             0: begin
               r_scl <= 1'b1;
@@ -141,7 +141,7 @@ module ov5640_i2c_init #(
         end
 
         S_SEND_BYTE: begin
-          // [Ethereal注释] 分支选择 3：依据 step 选择状态或算法路径；default 覆盖非法或空闲条件。
+          // 分支选择 3：依据 step 选择状态或算法路径；default 覆盖非法或空闲条件。
           case (step)
             0: begin
               r_scl <= 1'b0;
@@ -170,7 +170,7 @@ module ov5640_i2c_init #(
         end
 
         S_ACK: begin
-          // [Ethereal注释] 分支选择 4：依据 step 选择状态或算法路径；default 覆盖非法或空闲条件。
+          // 分支选择 4：依据 step 选择状态或算法路径；default 覆盖非法或空闲条件。
           case (step)
             0: begin
               r_scl <= 1'b0;
@@ -208,7 +208,7 @@ module ov5640_i2c_init #(
         end
 
         S_STOP: begin
-          // [Ethereal注释] 分支选择 5：依据 step 选择状态或算法路径；default 覆盖非法或空闲条件。
+          // 分支选择 5：依据 step 选择状态或算法路径；default 覆盖非法或空闲条件。
           case (step)
             0: begin
               r_scl <= 1'b0;
@@ -236,9 +236,9 @@ module ov5640_i2c_init #(
     end
   end
   // LUT 寄存器配置列表 (800x600 SVGA)
-  // [Ethereal注释] 组合过程 1：根据当前输入/状态计算结果；所有输出须在各分支完整赋值以避免锁存器。
+  // 组合过程 1：根据当前输入/状态计算结果；所有输出须在各分支完整赋值以避免锁存器。
   always @(*) begin
-    // [Ethereal注释] 分支选择 6：依据 lut_index 选择状态或算法路径；default 覆盖非法或空闲条件。
+    // 分支选择 6：依据 lut_index 选择状态或算法路径；default 覆盖非法或空闲条件。
     case (lut_index)
       10'd0:  lut_data = 24'h310311;
       10'd1:  lut_data = 24'h300882;

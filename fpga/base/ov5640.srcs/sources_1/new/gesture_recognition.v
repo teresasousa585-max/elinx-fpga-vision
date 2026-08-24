@@ -15,13 +15,13 @@
 `timescale 1ns / 1ps
 
 // -----------------------------------------------------------------------------
-// [Ethereal注释] 正文导读：对颜色阈值结果进行邻域处理和区域判断，输出手势候选区域及同步视频流。
-// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
-// [Ethereal注释] 修改约束：像素数据、有效信号和 HS/VS 必须保持同拍；跨时钟数据必须使用 FIFO 或握手。
+// 正文导读：对颜色阈值结果进行邻域处理和区域判断，输出手势候选区域及同步视频流。
+// 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// 修改约束：像素数据、有效信号和 HS/VS 必须保持同拍；跨时钟数据必须使用 FIFO 或握手。
 // -----------------------------------------------------------------------------
-// [Ethereal注释] 模块 gesture_recognition：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
+// 模块 gesture_recognition：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module gesture_recognition #(
-    // [Ethereal注释] 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
+    // 参数配置：综合期确定位宽、容量、频率或算法强度，修改后需重新验证资源和时序。
     parameter H_ACTIVE  = 1024,
     parameter V_ACTIVE  = 600,
     parameter ROI_X_MIN = 300,
@@ -29,7 +29,7 @@ module gesture_recognition #(
     parameter ROI_Y_MIN = 100,
     parameter ROI_Y_MAX = 500
 ) (
-    // [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
+    // 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
     input wire clk,
     input wire rst_n,
 
@@ -53,11 +53,11 @@ module gesture_recognition #(
   // =======================================================
   // 1. 轻量化预处理 (第一级严格打拍)
   // =======================================================
-  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+  // 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg bw_q;
   reg vs_d1, hs_d1, de_d1;
 
-  // [Ethereal注释] 时序过程 1：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
+  // 时序过程 1：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     // 数据打一拍
     bw_q  <= (i_ycbcr[23:16] > 8'd45);
@@ -71,10 +71,10 @@ module gesture_recognition #(
   // =======================================================
   // 2. 级联形态学 (消耗多行+多拍延迟，信号由模块内部自动对齐)
   // =======================================================
-  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+  // 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   wire vs_e, hs_e, de_e;
   wire [7:0] data_e;
-  // [Ethereal注释] 子模块例化 1（gray_morphology）：在灰度 3×3 邻域上按子模式执行腐蚀或膨胀，用于目标区域去噪与结构增强。
+  // 子模块例化 1（gray_morphology）：在灰度 3×3 邻域上按子模式执行腐蚀或膨胀，用于目标区域去噪与结构增强。
   gray_morphology #(
       .H_DISP(H_ACTIVE)
   ) m_erode (
@@ -91,10 +91,10 @@ module gesture_recognition #(
       .data_out(data_e)
   );
 
-  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+  // 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   wire vs_m, hs_m, de_m;
   wire [7:0] data_m;
-  // [Ethereal注释] 子模块例化 2（gray_morphology）：在灰度 3×3 邻域上按子模式执行腐蚀或膨胀，用于目标区域去噪与结构增强。
+  // 子模块例化 2（gray_morphology）：在灰度 3×3 邻域上按子模式执行腐蚀或膨胀，用于目标区域去噪与结构增强。
   gray_morphology #(
       .H_DISP(H_ACTIVE)
   ) m_dilate (
@@ -114,14 +114,14 @@ module gesture_recognition #(
   // =======================================================
   // 3. 后续逻辑与最终输出 (第二级严格打拍)
   // =======================================================
-  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+  // 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg data_m_d;
 
   // 声明最终输出的寄存器
   reg final_bw_data_reg;
   reg final_vs_reg, final_hs_reg, final_de_reg;
 
-  // [Ethereal注释] 时序过程 2：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
+  // 时序过程 2：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     data_m_d <= (data_m > 128);
 
@@ -135,7 +135,7 @@ module gesture_recognition #(
   end
 
   // 将完全同步的寄存器值连到输出端口
-  // [Ethereal注释] 组合连线组 1：从 o_final_vs 开始的连续赋值随右值立即更新，不增加寄存器延迟。
+  // 组合连线组 1：从 o_final_vs 开始的连续赋值随右值立即更新，不增加寄存器延迟。
   assign o_final_vs    = final_vs_reg;
   assign o_final_hs    = final_hs_reg;
   assign o_final_de    = final_de_reg;
@@ -146,10 +146,10 @@ module gesture_recognition #(
   // =======================================================
   // 4. 积分面积统计与特征判别 (保持原样，这部分仅做统计不输出图像)
   // =======================================================
-  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+  // 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [11:0] px, py;
   reg vs_md;
-  // [Ethereal注释] 时序过程 3：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
+  // 时序过程 3：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     vs_md <= vs_m;
     if (vs_m && !vs_md) begin
@@ -164,10 +164,10 @@ module gesture_recognition #(
   end
 
   // 垂直与水平积分
-  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+  // 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [9:0] v_sum[0:1023];
   reg [9:0] v_val, h_val;
-  // [Ethereal注释] 时序过程 4：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
+  // 时序过程 4：由 clk posedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk) begin
     if (de_m) begin
       v_val <= (data_m > 128) ? (v_sum[px] + 1'b1) : 10'd0;
@@ -177,10 +177,10 @@ module gesture_recognition #(
   end
 
   // 特征统计
-  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+  // 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   reg [11:0] xmin, xmax, ymin, ymax;
   reg [23:0] cnt, l_cnt;
-  // [Ethereal注释] 时序过程 5：由 clk posedge，rst_n negedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
+  // 时序过程 5：由 clk posedge，rst_n negedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       xmin <= 1023;
@@ -207,7 +207,7 @@ module gesture_recognition #(
   end
 
   // 面积判别与平滑
-  // [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+  // 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
   wire [11:0] sy = ymin + ((ymax > ymin) ? ((ymax - ymin) >> 2) : 0);
   wire [11:0] sx = xmin + ((xmax > xmin) ? ((xmax - xmin) >> 1) : 0);
 
@@ -215,7 +215,7 @@ module gesture_recognition #(
   reg ih, iv;
   reg [19:0] ah, av, max_ah, max_av;
 
-  // [Ethereal注释] 时序过程 6：由 clk posedge，rst_n negedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
+  // 时序过程 6：由 clk posedge，rst_n negedge 触发，用于寄存数据、推进状态或对齐流水线；复位优先级不可随意调整。
   always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       {fch, fcv, ih, iv, ah, av, max_ah, max_av, o_gesture_id, h1, h2} <= 0;

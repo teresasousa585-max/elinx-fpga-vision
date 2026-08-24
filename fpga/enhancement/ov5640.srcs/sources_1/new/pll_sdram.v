@@ -45,11 +45,11 @@
 //#C3_pha_8=0
 `timescale 1 ps / 1 ps
 // -----------------------------------------------------------------------------
-// [Ethereal注释] 正文导读：由参考时钟生成 SDRAM 控制器及相位补偿所需时钟。
-// [Ethereal注释] 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
-// [Ethereal注释] 修改约束：输出频率或相位变化时，必须同步更新时钟约束并复核 SDRAM、摄像头和显示接口时序。
+// 正文导读：由参考时钟生成 SDRAM 控制器及相位补偿所需时钟。
+// 阅读顺序：先确认参数和端口，再沿内部信号、时序过程及子模块例化追踪数据流。
+// 修改约束：输出频率或相位变化时，必须同步更新时钟约束并复核 SDRAM、摄像头和显示接口时序。
 // -----------------------------------------------------------------------------
-// [Ethereal注释] 模块 pll_sdram：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
+// 模块 pll_sdram：以下接口构成综合边界，上层通过端口连接数据流、控制流和状态信号。
 module pll_sdram(
 	areset,
 	inclk0,
@@ -59,7 +59,7 @@ module pll_sdram(
 	c3,
 	locked);
 
-	// [Ethereal注释] 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
+	// 接口信号：input 接收上游数据/控制，output 返回处理结果/状态，inout 连接双向器件总线。
 	input	areset;
 	input	inclk0;
 	output	c0;
@@ -67,15 +67,15 @@ module pll_sdram(
 	output	c2;
 	output	c3;
 	output	locked;
-	// [Ethereal注释] 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
+	// 内部信号：用于流水级对齐、状态保存或子模块互连；位宽必须覆盖最坏计算范围。
 	wire[5:0] wireC;
-	// [Ethereal注释] 组合连线组 1：从 c0 开始的连续赋值随右值立即更新，不增加寄存器延迟。
+	// 组合连线组 1：从 c0 开始的连续赋值随右值立即更新，不增加寄存器延迟。
 	assign c0 = wireC[0];
 	assign c1 = wireC[1];
 	assign c2 = wireC[2];
 	assign c3 = wireC[3];
 
-	// [Ethereal注释] 子模块例化 1（altpll）：调用 PLL 原语，配置内部时钟的频率、相位和占空比。
+	// 子模块例化 1（altpll）：调用 PLL 原语，配置内部时钟的频率、相位和占空比。
 	altpll	altpll_component (
 				.inclk ({1'h0, inclk0}),
 				.pllena (1'b1),
@@ -111,7 +111,7 @@ module pll_sdram(
 				.sclkout1 (),
 				.vcooverrange (),
 				.vcounderrange ());
-	// [Ethereal注释] IP 参数区：配置厂商原语的深度、宽度、寄存器级和目标器件属性。
+	// IP 参数区：配置厂商原语的深度、宽度、寄存器级和目标器件属性。
 	defparam
 		altpll_component.clk0_divide_by = 12,
 		altpll_component.clk0_duty_cycle = 50,
