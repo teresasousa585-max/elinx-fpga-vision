@@ -1,0 +1,27 @@
+{
+  "dataset": "new_capture",
+  "frame_bytes": 921600,
+  "sample_count": 163,
+  "label_distribution": {
+    "0": 2,
+    "1": 16,
+    "2": 17,
+    "3": 16,
+    "4": 20,
+    "5": 8,
+    "6": 24,
+    "7": 16,
+    "8": 16,
+    "9": 28
+  },
+  "misplaced_samples": [
+    "new_capture/0/raw8_digit_9_20260622_160939_789_0076.raw",
+    "new_capture/0/raw8_digit_9_20260622_160947_729_0077.raw",
+    "new_capture/0/raw8_digit_9_20260622_160954_855_0078.raw",
+    "new_capture/0/raw8_digit_9_20260622_161002_527_0079.raw",
+    "new_capture/0/raw8_digit_9_20260622_161009_597_0080.raw",
+    "new_capture/0/raw8_digit_9_20260622_161017_395_0081.raw"
+  ],
+  "manifest_sha256": "BDE9D389BAED96F098E7FC334A0EFFC8A4ACDAFCAA62E2FEEB0794740BDD3C05",
+  "smoke_count": 10
+}
